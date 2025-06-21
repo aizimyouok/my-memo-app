@@ -1,70 +1,117 @@
-# Getting Started with Create React App
+# 🗒️ 나만의 비밀 메모장
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Google Drive를 이용한 클라우드 기반 개인 메모 애플리케이션입니다.
 
-## Available Scripts
+## ✨ 주요 기능
 
-In the project directory, you can run:
+- 🔐 **비밀 메모**: AES 암호화로 보호되는 프라이빗 메모
+- 📖 **노트북 분류**: 메모를 카테고리별로 정리
+- 🌓 **다크/라이트 테마**: 사용자 취향에 맞는 테마 선택
+- 📝 **마크다운 지원**: 마크다운 문법으로 풍부한 텍스트 편집
+- 🔍 **실시간 검색**: 메모 제목으로 빠른 검색
+- ☁️ **클라우드 동기화**: Google Drive와 자동 동기화
+- 📱 **반응형 디자인**: 모든 디바이스에서 최적화된 경험
 
-### `npm start`
+## 🚀 시작하기
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 필수 요구사항
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- Node.js 16.0.0 이상
+- Google Cloud Console 프로젝트
+- Google Drive API 활성화
 
-### `npm test`
+### 설치 방법
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. **레포지토리 클론**
+   ```bash
+   git clone https://github.com/aizimyouok/my-memo-app.git
+   cd my-memo-app
+   ```
 
-### `npm run build`
+2. **의존성 설치**
+   ```bash
+   npm install
+   ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3. **환경변수 설정**
+   ```bash
+   # .env 파일 생성 (이미 생성됨)
+   # REACT_APP_GOOGLE_CLIENT_ID를 본인의 Google Client ID로 변경
+   ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+4. **Google Cloud Console 설정**
+   - [Google Cloud Console](https://console.cloud.google.com/)에서 프로젝트 생성
+   - Google Drive API 활성화
+   - OAuth 2.0 클라이언트 ID 생성
+   - 승인된 JavaScript 원본에 `http://localhost:3000` 추가
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+5. **개발 서버 실행**
+   ```bash
+   npm start
+   ```
 
-### `npm run eject`
+## 🛠️ 기술 스택
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- **Frontend**: React 19, JavaScript
+- **인증**: Google OAuth 2.0
+- **스토리지**: Google Drive AppData
+- **암호화**: CryptoJS (AES)
+- **스타일링**: Vanilla CSS (CSS-in-JS)
+- **마크다운**: Marked + DOMPurify
+- **빌드**: Create React App + Craco
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 📁 프로젝트 구조
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```
+my-memo-app/
+├── public/
+├── src/
+│   ├── App.js          # 메인 애플리케이션 컴포넌트
+│   ├── App.css         # 스타일시트
+│   └── index.js        # 앱 엔트리 포인트
+├── .env                # 환경변수 (Git에서 제외됨)
+├── craco.config.js     # Webpack 설정 오버라이드
+└── package.json        # 프로젝트 의존성
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 🔒 보안 기능
 
-## Learn More
+- **클라이언트 사이드 암호화**: 비밀 메모는 AES-256으로 암호화
+- **OAuth 2.0 인증**: Google 계정을 통한 안전한 로그인
+- **AppData 폴더**: Google Drive의 앱 전용 폴더에 데이터 저장
+- **XSS 방지**: DOMPurify로 마크다운 렌더링 시 XSS 공격 방지
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 🚀 배포
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Vercel 배포
 
-### Code Splitting
+1. Vercel에 프로젝트 연결
+2. 환경변수 `REACT_APP_GOOGLE_CLIENT_ID` 설정
+3. Google Cloud Console에서 배포된 도메인을 승인된 JavaScript 원본에 추가
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Netlify 배포
 
-### Analyzing the Bundle Size
+1. Netlify에 프로젝트 연결
+2. Build command: `npm run build`
+3. Publish directory: `build`
+4. 환경변수 `REACT_APP_GOOGLE_CLIENT_ID` 설정
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 🤝 기여하기
 
-### Making a Progressive Web App
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## 📄 라이선스
 
-### Advanced Configuration
+이 프로젝트는 MIT 라이선스 하에 있습니다. 자세한 내용은 `LICENSE` 파일을 참조하세요.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## 📧 문의
 
-### Deployment
+프로젝트에 대한 질문이나 제안사항이 있으시면 이슈를 등록해 주세요.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**⚠️ 주의사항**: .env 파일에 있는 Google Client ID는 절대 공개 저장소에 커밋하지 마세요!
