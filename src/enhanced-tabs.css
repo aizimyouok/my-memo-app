@@ -1,0 +1,215 @@
+/* 🎨 향상된 탭 스타일 - 개선된 버전 */
+
+/* 노트북 탭 컨테이너 */
+.notebook-tabs-container {
+  display: flex;
+  gap: 0px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 0;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* 스크롤바 스타일링 */
+.notebook-tabs-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.notebook-tabs-container::-webkit-scrollbar-track {
+  background: #f8f9fa;
+}
+
+.notebook-tabs-container::-webkit-scrollbar-thumb {
+  background: #dee2e6;
+  border-radius: 4px;
+}
+
+.notebook-tabs-container::-webkit-scrollbar-thumb:hover {
+  background: #adb5bd;
+}
+
+/* 탭 버튼 기본 스타일 - 아이콘 제거 및 최적화 */
+.tab-button {
+  padding: 10px 12px; /* 패딩 축소 */
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid #dee2e6;
+  border-radius: 0;
+  cursor: pointer;
+  background-color: transparent;
+  color: #212529;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 80px; /* 최소 너비 축소 */
+  max-width: 150px; /* 최대 너비 제한 */
+  position: relative;
+  user-select: none;
+  border-top: 3px solid transparent;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 선택된 탭 - 파란색 상단 테두리 */
+.tab-button.active {
+  background-color: #f8f9fa;
+  color: #007bff;
+  border-top: 3px solid #007bff;
+  padding-top: 9px;
+  font-weight: 700;
+}
+
+/* 탭 호버 효과 */
+.tab-button:hover:not(.active) {
+  background-color: #e6f7ff;
+}
+
+/* 새 노트북 추가 탭 */
+.tab-button.add-new {
+  border: 1px dashed #28a745;
+  color: #28a745;
+  min-width: 100px; /* 새 노트북 탭도 축소 */
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tab-button.add-new:hover {
+  background-color: rgba(40, 167, 69, 0.1);
+  border-style: solid;
+}
+
+/* 탭 편집 버튼들 - 항상 표시 */
+.tab-actions {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  display: flex; /* 항상 표시 */
+  gap: 4px;
+  z-index: 10;
+  opacity: 0.7; /* 기본적으로 반투명 */
+  transition: opacity 0.2s;
+}
+
+/* 호버 시 완전히 불투명하게 */
+.tab-button:hover .tab-actions,
+.tab-button.active .tab-actions {
+  opacity: 1;
+}
+
+.tab-action-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.8);
+  cursor: pointer;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-weight: bold;
+}
+
+.tab-edit-btn {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.tab-edit-btn:hover {
+  background-color: #138496;
+}
+
+.tab-delete-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.tab-delete-btn:hover {
+  background-color: #c82333;
+}
+
+/* 다크 테마 지원 - 색상 문제 해결 */
+[data-theme="dark"] .notebook-tabs-container::-webkit-scrollbar-track {
+  background: #121212;
+}
+
+[data-theme="dark"] .notebook-tabs-container::-webkit-scrollbar-thumb {
+  background: #495057;
+}
+
+[data-theme="dark"] .tab-button {
+  border-color: #495057;
+  color: #ffffff !important; /* 더 밝은 흰색으로 강제 적용 */
+  background-color: rgba(30, 30, 30, 0.8);
+}
+
+[data-theme="dark"] .tab-button.active {
+  background-color: #2d3748;
+  color: #60a5fa !important; /* 더 밝은 파란색으로 강제 적용 */
+  border-top-color: #60a5fa;
+}
+
+[data-theme="dark"] .tab-button:hover:not(.active) {
+  background-color: #374151;
+  color: #ffffff !important; /* 호버 시에도 흰색 강제 적용 */
+}
+
+[data-theme="dark"] .tab-button.add-new {
+  border-color: #51cf66;
+  color: #51cf66 !important; /* 강제 적용 */
+  max-width: 130px;
+}
+
+[data-theme="dark"] .tab-button.add-new:hover {
+  background-color: rgba(81, 207, 102, 0.1);
+  color: #51cf66 !important;
+}
+
+/* 모바일 최적화 */
+@media (max-width: 768px) {
+  .tab-button {
+    min-width: 70px; /* 모바일에서 더 축소 */
+    max-width: 120px;
+    padding: 12px 10px; /* 터치 친화적 크기 */
+    font-size: 13px;
+  }
+  
+  .tab-button.add-new {
+    min-width: 90px;
+    max-width: 110px;
+  }
+  
+  .notebook-tabs-container {
+    padding: 6px 0;
+  }
+  
+  /* 모바일에서는 탭 액션 버튼 항상 표시 */
+  .tab-actions {
+    display: flex;
+    top: -8px;
+    right: -8px;
+  }
+  
+  .tab-action-btn {
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tab-button {
+    min-width: 60px;
+    max-width: 100px;
+    padding: 14px 8px;
+    font-size: 12px;
+  }
+  
+  .tab-button.add-new {
+    min-width: 80px;
+    max-width: 95px;
+  }
+}

@@ -36,3 +36,44 @@
     transform: rotate(360deg);
   }
 }
+
+/* 🌳 탭 스크롤바 숨김 */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* 📱 모바일 반응형 개선 */
+@media (max-width: 768px) {
+  /* 좌측 패널 폭 축소 */
+  .left-panel-mobile {
+    width: 350px !important;
+  }
+  
+  /* 탭 스타일 모바일 최적화 */
+  .mobile-tab {
+    min-width: 120px;
+    padding: 10px 14px !important;
+    font-size: 13px !important;
+    white-space: nowrap;
+  }
+  
+  /* 터치 친화적 크기 */
+  .touch-friendly {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* 작은 화면용 좌측 패널 */
+  .left-panel-mobile {
+    width: 280px !important;
+  }
+  
+  /* 작은 화면용 탭 */
+  .mobile-tab {
+    min-width: 100px;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+}

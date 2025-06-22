@@ -1,12 +1,5 @@
-// 🔐 완전 암호화 메모장 앱 - 향상된 탭 기능 적용
+// 🔐 완전 암호화 메모장 앱 - 전체 새로운 시스템
 // 모든 데이터가 암호화되어 Google Drive에 저장됩니다.
-// 
-// 🔥 최신 개선사항 (2025-06-23):
-// ✅ 우클릭 문제 해결 - 항상 보이는 편집/삭제 버튼으로 대체
-// ✅ 메모 폴더 이동 버튼 명확히 표시 - "📁 이동" 텍스트 포함
-// ✅ 다크모드 탭 글씨 색상 문제 해결 - 강제 흰색 적용
-// ✅ 탭 아이콘 제거 및 가로 길이 축소 - 더 컴팩트한 디자인
-// ✅ 컨텍스트 메뉴 완전 제거 - 직관적인 버튼 인터페이스로 개선
 
 import { GoogleOAuthProvider, googleLogout, useGoogleLogin } from '@react-oauth/google';
 import { useState, useEffect, useCallback } from 'react';
@@ -14,7 +7,7 @@ import axios from 'axios';
 import CryptoJS from 'crypto-js';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import './enhanced-tabs.css';
+import TreeMemoSection from './TreeMemoSection';
 
 const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 const SCOPES = 'https://www.googleapis.com/auth/drive';
@@ -67,7 +60,8 @@ const CryptoUtils = {
   generateChecksum: (data) => {
     return CryptoJS.MD5(JSON.stringify(data)).toString();
   }
-};// 💾 로컬 스토리지 관리
+};
+// 💾 로컬 스토리지 관리
 const Storage = {
   save: (key, data) => {
     try {
@@ -97,7 +91,6 @@ const Storage = {
     keys.forEach(key => localStorage.removeItem(key));
   }
 };
-
 // 🎨 테마 스타일
 const getThemeStyles = (theme = 'light') => {
   const colors = {
@@ -115,7 +108,8 @@ const getThemeStyles = (theme = 'light') => {
     }
   };
   
-  const c = colors[theme];  
+  const c = colors[theme];
+  
   return {
     // 기본 레이아웃
     container: { 
@@ -168,7 +162,8 @@ const getThemeStyles = (theme = 'light') => {
     },
     passwordInputFocus: {
       borderColor: c.accent
-    },    // 버튼 스타일
+    },    
+    // 버튼 스타일
     button: {
       width: '100%',
       padding: '16px',
@@ -215,7 +210,8 @@ const getThemeStyles = (theme = 'light') => {
       backgroundColor: `${c.danger}15`,
       border: `1px solid ${c.danger}`,
       color: c.danger
-    },    statusWarning: {
+    },
+    statusWarning: {
       backgroundColor: `${c.warning}15`,
       border: `1px solid ${c.warning}`,
       color: c.warning
@@ -272,7 +268,8 @@ const getThemeStyles = (theme = 'light') => {
       borderRadius: '50%', 
       width: '36px', 
       height: '36px' 
-    },    // 아이콘 버튼
+    },    
+    // 아이콘 버튼
     iconButton: { 
       background: 'none', 
       border: `1px solid ${c.border}`, 
@@ -339,7 +336,8 @@ const getThemeStyles = (theme = 'light') => {
       backgroundColor: c.cardBg, padding: '32px', borderRadius: '16px',
       minWidth: '400px', maxWidth: '600px', maxHeight: '80vh', 
       overflow: 'auto', boxShadow: `0 16px 64px ${c.shadowColor}`
-    },    // 에디터
+    },    
+    // 에디터
     editor: {
       flexGrow: 1,
       border: 'none',
@@ -379,10 +377,57 @@ const getThemeStyles = (theme = 'light') => {
     },
     toastSuccess: { backgroundColor: c.success },
     toastError: { backgroundColor: c.danger },
-    toastWarning: { backgroundColor: c.warning, color: c.text }
+    toastWarning: { backgroundColor: c.warning, color: c.text },
+    
+    // 🌳 TreeMemoSection 전용 스타일
+    memoListItem: {
+      padding: '8px 12px', 
+      cursor: 'pointer', 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: '8px', 
+      borderRadius: '6px',
+      margin: '2px 0',
+      transition: 'background-color 0.2s',
+      backgroundColor: 'transparent',
+      border: `1px solid transparent`
+    },
+    activeMemoListItem: { 
+      backgroundColor: c.activeBg, 
+      border: `1px solid ${c.accent}`,
+      fontWeight: '500'
+    },
+    addButton: {
+      padding: '8px 12px',
+      minWidth: '40px',
+      fontSize: '14px'
+    },
+    inputGroup: {
+      display: 'flex',
+      gap: '8px',
+      alignItems: 'center'
+    },
+    notebookSection: {
+      padding: '16px',
+      borderBottom: `1px solid ${c.border}`,
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column'
+    },
+    memoSection: {
+      padding: '16px',
+      borderBottom: `1px solid ${c.border}`,
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column'
+    },
+    memoInput: {
+      ...this?.input || {},
+      resize: 'vertical',
+      fontFamily: 'inherit'
+    }
   };
 };
-
 // 🎯 아이콘 컴포넌트들
 const Icons = {
   Lock: () => (
@@ -458,7 +503,6 @@ const Toast = ({ show, message, type, styles }) => {
     </div>
   );
 };
-
 // 🔐 비밀번호 설정 컴포넌트
 const PasswordSetup = ({ onPasswordSet, styles }) => {
   const [password, setPassword] = useState('');
@@ -501,7 +545,8 @@ const PasswordSetup = ({ onPasswordSet, styles }) => {
     }
 
     onPasswordSet(password);
-  };  const strengthColors = ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#20c997', '#0dcaf0'];
+  };
+  const strengthColors = ['#dc3545', '#fd7e14', '#ffc107', '#28a745', '#20c997', '#0dcaf0'];
   const strengthTexts = ['매우 약함', '약함', '보통', '강함', '매우 강함', '최고'];
 
   return (
@@ -684,7 +729,6 @@ const PasswordUnlock = ({ onPasswordEnter, styles, error, attempts = 0 }) => {
     </div>
   );
 };
-
 // 📊 보안 상태 표시 컴포넌트
 const SecurityStatus = ({ isSecure, dataCount, lastBackup, styles }) => {
   return (
@@ -760,6 +804,11 @@ function SecureMemoApp() {
   const [sortBy, setSortBy] = useState('modifiedAt'); // 'modifiedAt', 'createdAt', 'title'
   const [sortOrder, setSortOrder] = useState('desc'); // 'asc', 'desc'
   
+  // 🌳 트리 구조 상태
+  const [expandedNotebooks, setExpandedNotebooks] = useState(new Set(['all']));
+  const [sortOption, setSortOption] = useState('date'); // 'date', 'created', 'title'
+  const [sortDirection, setSortDirection] = useState('desc'); // 'asc', 'desc'
+  
   // 🔐 개별 메모 비밀번호 상태
   const [isPrivateMemo, setIsPrivateMemo] = useState(false);
   const [privateMemoPassword, setPrivateMemoPassword] = useState('');
@@ -781,7 +830,7 @@ function SecureMemoApp() {
   const [autoBackupEnabled, setAutoBackupEnabled] = useState(() => Storage.load('auto-backup-enabled') || false);
   const [autoBackupInterval, setAutoBackupInterval] = useState(() => Storage.load('auto-backup-interval') || 30); // 분 단위
   const [lastAutoBackup, setLastAutoBackup] = useState(() => Storage.load('last-auto-backup') || null);
-  const [autoBackupTimer, setAutoBackupTimer] = useState(null);  
+  const [autoBackupTimer, setAutoBackupTimer] = useState(null);
   // 🎉 토스트 메시지 표시
   const showToast = useCallback((message, type = 'success', duration = 3000) => {
     console.log(`📢 ${type.toUpperCase()}: ${message}`);
@@ -824,7 +873,7 @@ function SecureMemoApp() {
       showToast('로그인에 실패했습니다.', 'error');
     },
     scope: SCOPES,
-  });  
+  });
   // 🚪 로그아웃
   const handleLogout = () => {
     googleLogout();
@@ -856,7 +905,6 @@ function SecureMemoApp() {
     
     showToast('로그아웃되었습니다.', 'success');
   };
-
   // 📂 앱 폴더 설정
   const setupAppFolder = async (token) => {
     try {
@@ -904,7 +952,7 @@ function SecureMemoApp() {
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
   // 🔍 암호화 파일 확인
   const checkEncryptedFile = async (token, folderId) => {
     try {
@@ -920,12 +968,15 @@ function SecureMemoApp() {
       
       if (files.length > 0) {
         setEncryptedFileId(files[0].id);
-        setIsPasswordSet(true);
+        setIsPasswordSet(true); // 🔐 Drive에 파일이 있으면 보안 설정 완료
         console.log('✅ 기존 암호화 파일 찾음:', files[0].id);
         
+        // 🔑 로컬 해시가 없으면 재생성 (이전 로그인 정보 복원)
         const storedHash = Storage.load('password-hash');
         if (!storedHash) {
           console.log('💡 로컬 해시 없음 - 비밀번호 입력 필요');
+          // 파일은 있지만 로컬 해시가 없는 경우 (로그아웃 후 재로그인)
+          // 비밀번호만 다시 입력하면 됨
         }
       } else {
         console.log('📝 새로운 사용자 - 암호화 파일 없음');
@@ -943,9 +994,11 @@ function SecureMemoApp() {
       setIsLoading(true);
       setMasterPassword(password);
       
+      // 비밀번호 해시 저장
       const passwordHash = CryptoUtils.hashPassword(password);
       Storage.save('password-hash', passwordHash);
       
+      // 초기 데이터 구조 생성
       const initialData = {
         notebooks: [],
         memos: [],
@@ -960,6 +1013,7 @@ function SecureMemoApp() {
         }
       };
       
+      // 암호화해서 Drive에 저장
       await saveEncryptedData(initialData, password);
       
       setAppData(initialData);
@@ -974,13 +1028,14 @@ function SecureMemoApp() {
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
   // 🔓 비밀번호 확인 및 잠금 해제
   const handlePasswordUnlock = async (password) => {
     try {
       setIsLoading(true);
       setPasswordError('');
       
+      // 🔑 로컬 해시가 있으면 우선 해시로 검증
       const storedHash = Storage.load('password-hash');
       
       if (storedHash) {
@@ -998,14 +1053,17 @@ function SecureMemoApp() {
         }
       }
       
+      // 🔐 실제 데이터 복호화로 비밀번호 검증 (해시가 없거나 해시 검증 통과 시)
       try {
         const data = await loadEncryptedData(password);
         if (data) {
+          // ✅ 성공: 데이터 로드 및 해시 저장
           setAppData(data);
           setMasterPassword(password);
           setIsUnlocked(true);
           setLoginAttempts(0);
           
+          // 로컬 해시가 없었다면 새로 저장
           if (!storedHash) {
             const newHash = CryptoUtils.hashPassword(password);
             Storage.save('password-hash', newHash);
@@ -1017,6 +1075,7 @@ function SecureMemoApp() {
           throw new Error('데이터 복호화 실패');
         }
       } catch (decryptError) {
+        // ❌ 복호화 실패 = 잘못된 비밀번호
         const newAttempts = loginAttempts + 1;
         setLoginAttempts(newAttempts);
         setPasswordError('잘못된 비밀번호입니다.');
@@ -1033,7 +1092,7 @@ function SecureMemoApp() {
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
   // 💾 암호화된 데이터 저장
   const saveEncryptedData = async (data, password = masterPassword) => {
     if (!accessToken || !appFolderId || !password) {
@@ -1041,6 +1100,7 @@ function SecureMemoApp() {
     }
     
     try {
+      // 메타데이터 업데이트
       const updatedData = {
         ...data,
         metadata: {
@@ -1051,8 +1111,10 @@ function SecureMemoApp() {
         }
       };
       
+      // 데이터 암호화
       const encryptedContent = CryptoUtils.encrypt(updatedData, password);
       
+      // Drive에 저장
       const boundary = '-------314159265358979323846';
       const delimiter = `\r\n--${boundary}\r\n`;
       const close_delim = `\r\n--${boundary}--`;
@@ -1061,6 +1123,7 @@ function SecureMemoApp() {
       let url;
       
       if (encryptedFileId) {
+        // 기존 파일 업데이트
         url = `https://www.googleapis.com/upload/drive/v3/files/${encryptedFileId}?uploadType=multipart`;
         requestBody = delimiter + 
           'Content-Type: application/json; charset=UTF-8\r\n\r\n' + 
@@ -1068,6 +1131,7 @@ function SecureMemoApp() {
           'Content-Type: text/plain; charset=UTF-8\r\n\r\n' + 
           encryptedContent + close_delim;
       } else {
+        // 새 파일 생성
         url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
         const metadata = {
           name: ENCRYPTED_DATA_FILE,
@@ -1104,7 +1168,7 @@ function SecureMemoApp() {
       console.error('❌ 데이터 저장 실패:', error);
       throw error;
     }
-  };  
+  };
   // 📖 암호화된 데이터 로드
   const loadEncryptedData = async (password = masterPassword) => {
     if (!accessToken || !encryptedFileId || !password) {
@@ -1151,6 +1215,7 @@ function SecureMemoApp() {
       
       let content = newMemoContent;
       
+      // 개별 비밀번호가 설정된 경우 내용 암호화
       if (isPrivateMemo && privateMemoPassword.trim()) {
         content = CryptoUtils.encrypt(newMemoContent, privateMemoPassword);
       }
@@ -1164,6 +1229,7 @@ function SecureMemoApp() {
         modifiedAt: new Date().toISOString(),
         tags: [],
         isStarred: false,
+        // 개별 비밀번호 관련 필드
         isPrivate: isPrivateMemo,
         hasPrivatePassword: isPrivateMemo && privateMemoPassword.trim() ? true : false
       };
@@ -1190,7 +1256,7 @@ function SecureMemoApp() {
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
   // ✏️ 메모 업데이트
   const updateMemo = async (memo) => {
     if (!memo) return;
@@ -1200,6 +1266,7 @@ function SecureMemoApp() {
       
       let contentToSave = memo.content;
       
+      // 개별 비밀번호가 설정된 메모인 경우 다시 암호화
       if (memo.hasPrivatePassword && memo._privatePassword) {
         contentToSave = CryptoUtils.encrypt(memo.content, memo._privatePassword);
       }
@@ -1210,6 +1277,7 @@ function SecureMemoApp() {
         modifiedAt: new Date().toISOString()
       };
       
+      // _로 시작하는 임시 속성들 제거
       delete updatedMemo._originalEncryptedContent;
       delete updatedMemo._privatePassword;
       
@@ -1221,9 +1289,10 @@ function SecureMemoApp() {
       await saveEncryptedData(updatedData);
       setAppData(updatedData);
       
+      // 선택된 메모도 업데이트 (복호화된 상태 유지)
       setSelectedMemo({
         ...updatedMemo,
-        content: memo.content,
+        content: memo.content, // 복호화된 내용 유지
         _originalEncryptedContent: contentToSave,
         _privatePassword: memo._privatePassword
       });
@@ -1276,7 +1345,7 @@ function SecureMemoApp() {
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
   // 📂 노트북 생성
   const createNotebook = async () => {
     if (!newNotebookName.trim()) {
@@ -1346,7 +1415,7 @@ function SecureMemoApp() {
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
   // 🗑️ 노트북 삭제
   const deleteNotebook = async (notebookId) => {
     const notebook = appData.notebooks.find(nb => nb.id === notebookId);
@@ -1365,6 +1434,7 @@ function SecureMemoApp() {
     try {
       setIsLoading(true);
       
+      // 노트북과 관련 메모들을 휴지통으로 이동
       const deletedNotebook = {
         ...notebook,
         deletedAt: new Date().toISOString(),
@@ -1401,6 +1471,245 @@ function SecureMemoApp() {
     }
   };
 
+  // 📁 메모 이동
+  const moveMemo = async (memoId, targetNotebookId) => {
+    try {
+      setIsLoading(true);
+      
+      const updatedData = {
+        ...appData,
+        memos: appData.memos.map(memo => 
+          memo.id === memoId 
+            ? { 
+                ...memo, 
+                notebookId: targetNotebookId === 'main' ? null : targetNotebookId,
+                modifiedAt: new Date().toISOString()
+              }
+            : memo
+        )
+      };
+      
+      await saveEncryptedData(updatedData);
+      setAppData(updatedData);
+      
+      setShowMoveModal(false);
+      setMemoToMove(null);
+      setTargetNotebookId('');
+      
+      showToast('메모가 이동되었습니다!', 'success');
+      
+    } catch (error) {
+      console.error('❌ 메모 이동 실패:', error);
+      showToast('메모 이동에 실패했습니다.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  // 🔄 휴지통에서 복구
+  const restoreFromTrash = async (item) => {
+    try {
+      setIsLoading(true);
+      
+      let updatedData = { ...appData };
+      
+      if (item.type === 'memo') {
+        const restoredMemo = { ...item };
+        delete restoredMemo.deletedAt;
+        delete restoredMemo.type;
+        
+        updatedData.memos = [restoredMemo, ...updatedData.memos];
+      } else if (item.type === 'notebook') {
+        const restoredNotebook = { ...item };
+        delete restoredNotebook.deletedAt;
+        delete restoredNotebook.type;
+        
+        updatedData.notebooks = [...updatedData.notebooks, restoredNotebook]
+          .sort((a, b) => a.name.localeCompare(b.name));
+      }
+      
+      updatedData.deletedItems = updatedData.deletedItems.filter(di => di.id !== item.id);
+      
+      await saveEncryptedData(updatedData);
+      setAppData(updatedData);
+      
+      showToast(`${item.type === 'memo' ? '메모' : '노트북'}가 복구되었습니다!`, 'success');
+      
+    } catch (error) {
+      console.error('❌ 복구 실패:', error);
+      showToast('복구에 실패했습니다.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 🔥 휴지통에서 영구 삭제
+  const permanentDelete = async (item) => {
+    const confirmed = window.confirm(
+      `"${item.title || item.name}"를 영구적으로 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`
+    );
+    if (!confirmed) return;
+    
+    try {
+      setIsLoading(true);
+      
+      const updatedData = {
+        ...appData,
+        deletedItems: appData.deletedItems.filter(di => di.id !== item.id)
+      };
+      
+      await saveEncryptedData(updatedData);
+      setAppData(updatedData);
+      
+      showToast('영구적으로 삭제되었습니다.', 'success');
+      
+    } catch (error) {
+      console.error('❌ 영구 삭제 실패:', error);
+      showToast('영구 삭제에 실패했습니다.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 💾 자동 백업 생성
+  const createBackup = async () => {
+    if (!accessToken || !appFolderId) {
+      showToast('백업을 생성할 수 없습니다.', 'error');
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      
+      const backupData = {
+        ...appData,
+        metadata: {
+          ...appData.metadata,
+          backupCreatedAt: new Date().toISOString()
+        }
+      };
+      
+      const encryptedBackup = CryptoUtils.encrypt(backupData, masterPassword);
+      const backupFileName = `${BACKUP_PREFIX}${new Date().toISOString().split('T')[0]}.enc`;
+      
+      const boundary = '-------314159265358979323846';
+      const delimiter = `\r\n--${boundary}\r\n`;
+      const close_delim = `\r\n--${boundary}--`;
+      
+      const metadata = {
+        name: backupFileName,
+        parents: [appFolderId],
+        mimeType: 'text/plain'
+      };
+      
+      const requestBody = delimiter + 
+        'Content-Type: application/json; charset=UTF-8\r\n\r\n' + 
+        JSON.stringify(metadata) + delimiter + 
+        'Content-Type: text/plain; charset=UTF-8\r\n\r\n' + 
+        encryptedBackup + close_delim;
+      
+      await axios.post(
+        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+        requestBody,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': `multipart/related; boundary=${boundary}`
+          }
+        }
+      );
+      
+      // 메타데이터 업데이트
+      const updatedData = {
+        ...appData,
+        metadata: {
+          ...appData.metadata,
+          lastBackup: new Date().toISOString()
+        }
+      };
+      
+      await saveEncryptedData(updatedData);
+      setAppData(updatedData);
+      
+      // 자동 백업인 경우 마지막 백업 시간 저장
+      const now = new Date().toISOString();
+      setLastAutoBackup(now);
+      Storage.save('last-auto-backup', now);
+      
+      showToast('백업이 생성되었습니다!', 'success');
+      
+    } catch (error) {
+      console.error('❌ 백업 생성 실패:', error);
+      showToast('백업 생성에 실패했습니다.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ⚙️ 자동 백업 설정
+  const setupAutoBackup = () => {
+    // 기존 타이머 정리
+    if (autoBackupTimer) {
+      clearInterval(autoBackupTimer);
+    }
+    
+    if (autoBackupEnabled && isUnlocked) {
+      const intervalMs = autoBackupInterval * 60 * 1000; // 분을 밀리초로 변환
+      const timer = setInterval(() => {
+        console.log('🔄 자동 백업 실행 중...');
+        createBackup();
+      }, intervalMs);
+      
+      setAutoBackupTimer(timer);
+      console.log(`✅ 자동 백업 활성화: ${autoBackupInterval}분마다`);
+    }
+  };
+
+  // ⚙️ 자동 백업 설정 변경
+  const updateAutoBackupSettings = (enabled, interval) => {
+    setAutoBackupEnabled(enabled);
+    setAutoBackupInterval(interval);
+    
+    Storage.save('auto-backup-enabled', enabled);
+    Storage.save('auto-backup-interval', interval);
+    
+    setupAutoBackup();
+    
+    if (enabled) {
+      showToast(`자동 백업이 활성화되었습니다 (${interval}분마다)`, 'success');
+    } else {
+      showToast('자동 백업이 비활성화되었습니다', 'success');
+    }
+  };
+  // 📤 데이터 내보내기 (JSON)
+  const exportData = () => {
+    try {
+      const exportData = {
+        ...appData,
+        exportedAt: new Date().toISOString(),
+        version: '2.0'
+      };
+      
+      const jsonString = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `secure_memo_backup_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      URL.revokeObjectURL(url);
+      
+      showToast('데이터가 내보내기되었습니다!', 'success');
+      
+    } catch (error) {
+      console.error('❌ 데이터 내보내기 실패:', error);
+      showToast('데이터 내보내기에 실패했습니다.', 'error');
+    }
+  };
+
   // 🔐 개별 비밀번호 메모 선택 처리
   const handleMemoSelect = (memo) => {
     if (memo.hasPrivatePassword) {
@@ -1421,8 +1730,10 @@ function SecureMemoApp() {
     }
 
     try {
+      // 암호화된 내용 복호화 시도
       const decryptedContent = CryptoUtils.decrypt(privateMemoToUnlock.content, privateMemoUnlockPassword);
       
+      // 복호화 성공 시 메모 선택
       setSelectedMemo({
         ...privateMemoToUnlock,
         content: decryptedContent,
@@ -1440,7 +1751,8 @@ function SecureMemoApp() {
     } catch (error) {
       setPrivateMemoUnlockError('잘못된 비밀번호입니다.');
     }
-  };  
+  };
+
   // 🎛️ 테마 토글
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -1448,14 +1760,30 @@ function SecureMemoApp() {
     Storage.save('theme', newTheme);
   };
 
-  // 📋 필터링 및 정렬된 메모 가져오기
-  const getFilteredMemos = () => {
-    let filteredMemos = selectedNotebookId === 'all' 
-      ? appData.memos 
-      : appData.memos.filter(memo => memo.notebookId === selectedNotebookId);
+  // 🌳 트리 구조 관련 함수들
+  const toggleNotebook = (notebookId) => {
+    setExpandedNotebooks(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(notebookId)) {
+        newSet.delete(notebookId);
+      } else {
+        newSet.add(notebookId);
+      }
+      return newSet;
+    });
+  };
+
+  const getMemosByNotebook = (notebookId) => {
+    let memos;
+    if (notebookId === 'all') {
+      memos = appData.memos;
+    } else {
+      memos = appData.memos.filter(memo => memo.notebookId === notebookId);
+    }
     
+    // 검색 필터링
     if (searchQuery.trim()) {
-      filteredMemos = filteredMemos.filter(memo => {
+      memos = memos.filter(memo => {
         if (memo.hasPrivatePassword) {
           return memo.title.toLowerCase().includes(searchQuery.toLowerCase());
         } else {
@@ -1465,6 +1793,57 @@ function SecureMemoApp() {
       });
     }
     
+    // 정렬
+    memos.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortOption) {
+        case 'title':
+          aValue = a.title.toLowerCase();
+          bValue = b.title.toLowerCase();
+          break;
+        case 'created':
+          aValue = new Date(a.createdAt);
+          bValue = new Date(b.createdAt);
+          break;
+        case 'date':
+        default:
+          aValue = new Date(a.modifiedAt);
+          bValue = new Date(b.modifiedAt);
+          break;
+      }
+      
+      if (sortDirection === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+    
+    return memos;
+  };
+
+  // 📋 필터링 및 정렬된 메모 가져오기
+  const getFilteredMemos = () => {
+    let filteredMemos = selectedNotebookId === 'all' 
+      ? appData.memos 
+      : appData.memos.filter(memo => memo.notebookId === selectedNotebookId);
+    
+    // 🔍 검색 필터링
+    if (searchQuery.trim()) {
+      filteredMemos = filteredMemos.filter(memo => {
+        // 개별 비밀번호가 설정된 메모는 제목만 검색
+        if (memo.hasPrivatePassword) {
+          return memo.title.toLowerCase().includes(searchQuery.toLowerCase());
+        } else {
+          // 일반 메모는 제목과 내용 모두 검색
+          return memo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                 memo.content.toLowerCase().includes(searchQuery.toLowerCase());
+        }
+      });
+    }
+    
+    // 📊 정렬
     filteredMemos.sort((a, b) => {
       let aValue, bValue;
       
@@ -1510,6 +1889,7 @@ function SecureMemoApp() {
         checkEncryptedFile(savedToken, savedFolderId);
       }
     } else {
+      // 만료된 토큰 제거
       Storage.remove('access-token');
       Storage.remove('token-expiry');
     }
@@ -1525,11 +1905,24 @@ function SecureMemoApp() {
     document.body.style.backgroundColor = colors[theme];
     document.documentElement.style.backgroundColor = colors[theme];
     
+    // 컴포넌트 언마운트 시 기본값으로 복원
     return () => {
       document.body.style.backgroundColor = '';
       document.documentElement.style.backgroundColor = '';
     };
-  }, [theme]);  
+  }, [theme]);
+
+  // 🔄 자동 백업 설정
+  useEffect(() => {
+    setupAutoBackup();
+    
+    // 컴포넌트 언마운트 시 타이머 정리
+    return () => {
+      if (autoBackupTimer) {
+        clearInterval(autoBackupTimer);
+      }
+    };
+  }, [autoBackupEnabled, autoBackupInterval, isUnlocked]);
   // 🎨 메인 렌더링
   return (
     <div style={styles.container}>
@@ -1624,427 +2017,50 @@ function SecureMemoApp() {
                 </button>
               </div>
             </div>            
-            {/* 노트북 섹션 */}
-            <div style={styles.section}>
-              <div style={styles.sectionTitle}>
-                📁 노트북
-              </div>
-              
-              {/* 새 노트북 생성 */}
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <input
-                  type="text"
-                  placeholder="새 노트북 이름..."
-                  value={newNotebookName}
-                  onChange={(e) => setNewNotebookName(e.target.value)}
-                  style={{...styles.input, flex: 1, width: '0'}}
-                  onKeyPress={(e) => e.key === 'Enter' && createNotebook()}
-                />
-                <button
-                  onClick={createNotebook}
-                  style={{
-                    ...styles.button, 
-                    ...styles.primaryButton, 
-                    padding: '8px', 
-                    width: '32px', 
-                    minWidth: '32px',
-                    height: '32px',
-                    fontSize: '14px'
-                  }}
-                  disabled={!newNotebookName.trim()}
-                  title="노트북 생성"
-                >
-                  ➕
-                </button>
-              </div>
-              
-              {/* 🔥 향상된 노트북 탭 버튼들 - 우클릭 문제 해결 */}
-              <div 
-                className="notebook-tabs-container"
-                onWheel={(e) => {
-                  e.preventDefault();
-                  e.currentTarget.scrollLeft += e.deltaY;
-                }}
-              >
-                {/* 전체 메모 탭 */}
-                <button
-                  className={`tab-button ${selectedNotebookId === 'all' ? 'active' : ''}`}
-                  onClick={() => setSelectedNotebookId('all')}
-                  onContextMenu={(e) => e.preventDefault()}
-                >
-                  모든 메모 ({appData.memos.length})
-                </button>
-                
-                {/* 노트북 탭들 */}
-                {appData.notebooks.map(notebook => (
-                  <button
-                    key={notebook.id}
-                    className={`tab-button ${selectedNotebookId === notebook.id ? 'active' : ''}`}
-                    onClick={() => setSelectedNotebookId(notebook.id)}
-                    onContextMenu={(e) => e.preventDefault()} // 우클릭 방지
-                  >
-                    {notebook.name} ({appData.memos.filter(m => m.notebookId === notebook.id).length})
-                    
-                    {/* 항상 보이는 편집/삭제 버튼 */}
-                    <div className="tab-actions">
-                      <button 
-                        className="tab-action-btn tab-edit-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingNotebook(notebook.id);
-                        }}
-                        title="이름 변경"
-                      >
-                        ✏
-                      </button>
-                      <button 
-                        className="tab-action-btn tab-delete-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteNotebook(notebook.id);
-                        }}
-                        title="삭제"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </button>
-                ))}
-                
-                {/* 새 노트북 추가 탭 */}
-                <button
-                  className="tab-button add-new"
-                  onClick={() => {
-                    const name = prompt('새 노트북 이름을 입력하세요:');
-                    if (name && name.trim()) {
-                      setNewNotebookName(name.trim());
-                      createNotebook();
-                    }
-                  }}
-                  title="새 노트북 추가"
-                >
-                  ➕ 새 노트북
-                </button>
-              </div>
-
-
-              {/* 노트북 이름 편집 */}
-              {editingNotebook && (
-                <div style={{ marginTop: '16px' }}>
-                  <input
-                    type="text"
-                    defaultValue={appData.notebooks.find(nb => nb.id === editingNotebook)?.name || ''}
-                    autoFocus
-                    onBlur={(e) => {
-                      if (e.target.value.trim()) {
-                        updateNotebook(editingNotebook, e.target.value.trim());
-                      } else {
-                        setEditingNotebook(null);
-                      }
-                    }}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        updateNotebook(editingNotebook, e.target.value.trim());
-                      } else if (e.key === 'Escape') {
-                        setEditingNotebook(null);
-                      }
-                    }}
-                    style={{...styles.input, width: '100%'}}
-                  />
-                </div>
-              )}
-            </div>            
-            {/* 메모 섹션 */}
-            <div style={styles.section}>
-              <div style={styles.sectionTitle}>
-                📝 메모 ({getFilteredMemos().length})
-              </div>
-              
-              {/* 검색 및 정렬 */}
-              <div style={{ marginBottom: '16px' }}>
-                {/* 검색 바 */}
-                <div style={{ position: 'relative', marginBottom: '12px' }}>
-                  <input
-                    type="text"
-                    placeholder="🔍 메모 검색..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{
-                      ...styles.input,
-                      paddingLeft: '12px',
-                      width: 'calc(100% - 24px)',
-                      maxWidth: '400px'
-                    }}
-                  />
-                  {searchQuery && (
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      style={{
-                        position: 'absolute',
-                        right: '8px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        color: styles.textSecondary
-                      }}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-                
-                {/* 정렬 옵션 */}
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    style={{
-                      ...styles.input,
-                      flex: 1,
-                      fontSize: '12px',
-                      padding: '6px 8px',
-                      maxWidth: '280px'
-                    }}
-                  >
-                    <option value="modifiedAt">📅 수정일순</option>
-                    <option value="createdAt">🆕 생성일순</option>
-                    <option value="title">🔤 제목순</option>
-                  </select>
-                  
-                  <button
-                    onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-                    style={{
-                      ...styles.button,
-                      ...styles.primaryButton,
-                      padding: '6px 8px',
-                      fontSize: '12px',
-                      width: '32px',
-                      minWidth: '32px'
-                    }}
-                    title={sortOrder === 'desc' ? '내림차순' : '오름차순'}
-                  >
-                    {sortOrder === 'desc' ? '↓' : '↑'}
-                  </button>
-                </div>
-              </div>
-              
-              {/* 새 메모 작성 */}
-              <div style={{ marginBottom: '16px' }}>
-                <textarea
-                  placeholder="새 메모 작성..."
-                  value={newMemoContent}
-                  onChange={(e) => setNewMemoContent(e.target.value)}
-                  style={{
-                    ...styles.input,
-                    height: '80px',
-                    resize: 'vertical',
-                    marginBottom: '8px',
-                    width: 'calc(100% - 24px)',
-                    maxWidth: '400px'
-                  }}
-                />
-                
-                {/* 개별 비밀번호 설정 */}
-                <div style={{ marginBottom: '8px' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '8px' }}>
-                    <input
-                      type="checkbox"
-                      checked={isPrivateMemo}
-                      onChange={(e) => {
-                        setIsPrivateMemo(e.target.checked);
-                        if (!e.target.checked) {
-                          setPrivateMemoPassword('');
-                        }
-                      }}
-                      style={{ transform: 'scale(1.1)' }}
-                    />
-                    <span style={{ fontSize: '12px' }}>🔒 이 메모에 개별 비밀번호 설정</span>
-                  </label>
-                  
-                  {isPrivateMemo && (
-                    <div style={{ position: 'relative' }}>
-                      <input
-                        type={showPrivatePassword ? 'text' : 'password'}
-                        placeholder="개별 비밀번호 입력..."
-                        value={privateMemoPassword}
-                        onChange={(e) => setPrivateMemoPassword(e.target.value)}
-                        style={{
-                          ...styles.input,
-                          fontSize: '12px',
-                          padding: '8px',
-                          width: 'calc(100% - 40px)',
-                          maxWidth: '360px'
-                        }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPrivatePassword(!showPrivatePassword)}
-                        style={{
-                          position: 'absolute',
-                          right: '8px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: '12px'
-                        }}
-                      >
-                        {showPrivatePassword ? <Icons.EyeOff /> : <Icons.Eye />}
-                      </button>
-                    </div>
-                  )}
-                </div>
-                
-                <button
-                  onClick={createMemo}
-                  style={{...styles.button, ...styles.successButton, width: '100%', maxWidth: '412px'}}
-                  disabled={!newMemoContent.trim() || (isPrivateMemo && !privateMemoPassword.trim())}
-                >
-                  💾 메모 저장
-                </button>
-              </div>              
-              {/* 메모 목록 */}
-              <div style={{ height: '300px', overflowY: 'auto', border: `1px solid ${styles.border}`, borderRadius: '8px', marginBottom: '16px' }}>
-                <ul style={styles.list}>
-                  {getFilteredMemos().map(memo => (
-                    <li
-                      key={memo.id}
-                      style={{
-                        ...styles.listItem,
-                        ...(selectedMemo?.id === memo.id ? styles.activeListItem : {}),
-                        padding: '8px 12px',
-                        alignItems: 'center',
-                        justifyContent: 'space-between'
-                      }}
-                      onClick={() => handleMemoSelect(memo)}
-                    >
-                      <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '12px', 
-                        flex: 1,
-                        minWidth: 0,
-                        cursor: 'pointer'
-                      }}>
-                        <span>{memo.hasPrivatePassword ? '🔒' : '📄'}</span>
-                        <span style={{ 
-                          fontWeight: '600',
-                          minWidth: '120px',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
-                        }}>
-                          {memo.title}
-                        </span>
-                        <span style={{ 
-                          fontSize: '11px', 
-                          color: styles.textSecondary,
-                          minWidth: '60px',
-                          whiteSpace: 'nowrap'
-                        }}>
-                          {new Date(memo.modifiedAt).toLocaleDateString('ko-KR', { 
-                            month: 'short', 
-                            day: 'numeric' 
-                          })}
-                        </span>
-                        <span style={{ 
-                          fontSize: '13px',
-                          opacity: 0.7,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          flex: 1
-                        }}>
-                          {memo.content.split('\n')[0]}
-                        </span>
-                      </div>
-                      
-                      <div style={{ display: 'flex', gap: '4px', marginLeft: '8px' }}>
-                        {/* 메모 이동 버튼 - 더 명확하게 표시 */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setMemoToMove(memo);
-                            setShowMoveModal(true);
-                          }}
-                          style={{
-                            background: 'none',
-                            border: `1px solid ${styles.border}`,
-                            cursor: 'pointer',
-                            padding: '6px 8px',
-                            fontSize: '12px',
-                            borderRadius: '6px',
-                            backgroundColor: '#17a2b8',
-                            color: 'white',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                          title="다른 노트북으로 이동"
-                        >
-                          📁 이동
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteMemo(memo.id, memo.title);
-                          }}
-                          style={{
-                            background: 'none',
-                            border: `1px solid ${styles.border}`,
-                            cursor: 'pointer',
-                            padding: '6px 8px',
-                            fontSize: '12px',
-                            borderRadius: '6px',
-                            backgroundColor: styles.dangerButton.backgroundColor,
-                            color: 'white'
-                          }}
-                          title="삭제"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              
-              {/* 하단 버튼들 */}
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <button
-                  onClick={() => setShowSettingsModal(true)}
-                  style={{
-                    ...styles.button, 
-                    ...styles.primaryButton, 
-                    flex: 1, 
-                    fontSize: '11px',
-                    padding: '8px 4px',
-                    whiteSpace: 'nowrap'
-                  }}
-                  title="설정"
-                >
-                  설정
-                </button>
-                <button
-                  onClick={() => setShowTrashModal(true)}
-                  style={{
-                    ...styles.button, 
-                    ...styles.dangerButton, 
-                    flex: 1, 
-                    fontSize: '11px',
-                    padding: '8px 4px',
-                    whiteSpace: 'nowrap'
-                  }}
-                  title="휴지통"
-                >
-                  휴지통
-                </button>
-              </div>
-            </div>
+            {/* 트리 구조 메모 탐색기 섹션 */}
+            <TreeMemoSection
+              styles={styles}
+              appData={appData}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              sortOption={sortOption}
+              setSortOption={setSortOption}
+              sortDirection={sortDirection}
+              setSortDirection={setSortDirection}
+              expandedNotebooks={expandedNotebooks}
+              toggleNotebook={toggleNotebook}
+              selectedNotebookId={selectedNotebookId}
+              setSelectedNotebookId={setSelectedNotebookId}
+              selectedMemo={selectedMemo}
+              setSelectedMemo={handleMemoSelect}
+              newNotebookName={newNotebookName}
+              setNewNotebookName={setNewNotebookName}
+              createNotebook={createNotebook}
+              editingNotebook={editingNotebook}
+              setEditingNotebook={setEditingNotebook}
+              updateNotebook={updateNotebook}
+              deleteNotebook={deleteNotebook}
+              getMemosByNotebook={getMemosByNotebook}
+              getFilteredMemos={getFilteredMemos}
+              setMemoToMove={setMemoToMove}
+              setShowMoveModal={setShowMoveModal}
+              deleteMemo={deleteMemo}
+              newMemoContent={newMemoContent}
+              setNewMemoContent={setNewMemoContent}
+              createMemo={createMemo}
+              isPrivateMemo={isPrivateMemo}
+              setIsPrivateMemo={setIsPrivateMemo}
+              privateMemoPassword={privateMemoPassword}
+              setPrivateMemoPassword={setPrivateMemoPassword}
+              showPrivatePassword={showPrivatePassword}
+              setShowPrivatePassword={setShowPrivatePassword}
+              Icons={Icons}
+              createBackup={createBackup}
+              exportData={exportData}
+              setShowSettingsModal={setShowSettingsModal}
+              setShowTrashModal={setShowTrashModal}
+              isLoading={isLoading}
+            />
           </div>          
           {/* 오른쪽 패널 - 에디터 */}
           <div style={styles.rightPanel}>
@@ -2120,13 +2136,61 @@ function SecureMemoApp() {
                     <li>💾 자동 백업 시스템</li>
                     <li>📤 데이터 내보내기/가져오기</li>
                     <li>🌙 다크/라이트 테마</li>
-                    <li>🎯 향상된 탭 기능 (우클릭 메뉴)</li>
                   </ul>
                 </div>
               </div>
             )}
           </div>
         </>
+      )}      
+      {/* 메모 이동 모달 */}
+      {showMoveModal && memoToMove && (
+        <div style={styles.modal}>
+          <div style={styles.modalContent}>
+            <h3>메모 이동</h3>
+            <p>"{memoToMove.title}" 메모를 어디로 이동하시겠습니까?</p>
+            
+            <select
+              value={targetNotebookId}
+              onChange={(e) => setTargetNotebookId(e.target.value)}
+              style={{...styles.input, marginBottom: '16px'}}
+            >
+              <option value="">이동할 위치를 선택하세요</option>
+              <option value="main">📋 메인 (모든 메모)</option>
+              {appData.notebooks.map(notebook => (
+                <option key={notebook.id} value={notebook.id}>
+                  📁 {notebook.name}
+                </option>
+              ))}
+            </select>
+            
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setShowMoveModal(false);
+                  setMemoToMove(null);
+                  setTargetNotebookId('');
+                }}
+                style={{...styles.button, backgroundColor: '#6c757d', color: 'white'}}
+              >
+                취소
+              </button>
+              <button
+                onClick={() => {
+                  if (targetNotebookId) {
+                    moveMemo(memoToMove.id, targetNotebookId);
+                  } else {
+                    showToast('이동할 위치를 선택해주세요.', 'error');
+                  }
+                }}
+                style={{...styles.button, ...styles.successButton}}
+                disabled={!targetNotebookId}
+              >
+                이동
+              </button>
+            </div>
+          </div>
+        </div>
       )}      
       {/* 휴지통 모달 */}
       {showTrashModal && (
@@ -2161,13 +2225,13 @@ function SecureMemoApp() {
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button
-                        onClick={() => showToast('복구 기능은 추후 구현됩니다.', 'warning')}
+                        onClick={() => restoreFromTrash(item)}
                         style={{...styles.button, ...styles.successButton, padding: '6px 12px', fontSize: '12px'}}
                       >
                         복구
                       </button>
                       <button
-                        onClick={() => showToast('영구삭제 기능은 추후 구현됩니다.', 'warning')}
+                        onClick={() => permanentDelete(item)}
                         style={{...styles.button, ...styles.dangerButton, padding: '6px 12px', fontSize: '12px'}}
                       >
                         영구삭제
@@ -2188,7 +2252,8 @@ function SecureMemoApp() {
             </div>
           </div>
         </div>
-      )}      
+      )}
+      
       {/* 설정 모달 */}
       {showSettingsModal && (
         <div style={styles.modal}>
@@ -2218,25 +2283,46 @@ function SecureMemoApp() {
               </div>
             </div>
             
-            {/* 향상된 탭 기능 설명 */}
+            {/* 자동 백업 설정 */}
             <div style={{ marginBottom: '24px' }}>
-              <h4>🎯 향상된 탭 기능</h4>
-              <div style={{ 
-                padding: '16px',
-                backgroundColor: styles.activeBg,
-                borderRadius: '8px',
-                fontSize: '14px'
-              }}>
-                <p><strong>✅ 적용된 기능들:</strong></p>
-                <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-                  <li>탭 클릭으로 노트북별 메모 필터링</li>
-                  <li>노트북 탭 우클릭 → 수정/삭제 메뉴</li>
-                  <li>➕ 새 노트북 프롬프트 생성</li>
-                  <li>선택된 탭 파란색 상단 테두리</li>
-                  <li>탭 오버플로우 자동 스크롤 (마우스 휠)</li>
-                  <li>모바일 터치 친화적 크기</li>
-                </ul>
+              <h4>🔄 자동 백업</h4>
+              
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={autoBackupEnabled}
+                    onChange={(e) => updateAutoBackupSettings(e.target.checked, autoBackupInterval)}
+                    style={{ transform: 'scale(1.2)' }}
+                  />
+                  <span>자동 백업 활성화</span>
+                </label>
               </div>
+              
+              {autoBackupEnabled && (
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px' }}>
+                    백업 주기:
+                  </label>
+                  <select
+                    value={autoBackupInterval}
+                    onChange={(e) => updateAutoBackupSettings(autoBackupEnabled, parseInt(e.target.value))}
+                    style={{...styles.input, width: '100%'}}
+                  >
+                    <option value={15}>15분마다</option>
+                    <option value={30}>30분마다</option>
+                    <option value={60}>1시간마다</option>
+                    <option value={120}>2시간마다</option>
+                    <option value={360}>6시간마다</option>
+                  </select>
+                </div>
+              )}
+              
+              {lastAutoBackup && (
+                <div style={{ fontSize: '12px', color: styles.textSecondary }}>
+                  마지막 자동 백업: {new Date(lastAutoBackup).toLocaleString('ko-KR')}
+                </div>
+              )}
             </div>
             
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -2306,6 +2392,7 @@ function SecureMemoApp() {
     </div>
   );
 }
+
 // 🎯 최종 앱 컴포넌트
 function App() {
   return (

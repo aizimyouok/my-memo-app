@@ -1,12 +1,5 @@
 // 🔐 완전 암호화 메모장 앱 - 향상된 탭 기능 적용
 // 모든 데이터가 암호화되어 Google Drive에 저장됩니다.
-// 
-// 🔥 최신 개선사항 (2025-06-23):
-// ✅ 우클릭 문제 해결 - 항상 보이는 편집/삭제 버튼으로 대체
-// ✅ 메모 폴더 이동 버튼 명확히 표시 - "📁 이동" 텍스트 포함
-// ✅ 다크모드 탭 글씨 색상 문제 해결 - 강제 흰색 적용
-// ✅ 탭 아이콘 제거 및 가로 길이 축소 - 더 컴팩트한 디자인
-// ✅ 컨텍스트 메뉴 완전 제거 - 직관적인 버튼 인터페이스로 개선
 
 import { GoogleOAuthProvider, googleLogout, useGoogleLogin } from '@react-oauth/google';
 import { useState, useEffect, useCallback } from 'react';
@@ -755,6 +748,9 @@ function SecureMemoApp() {
   const [viewMode, setViewMode] = useState('edit');
   const [editingNotebook, setEditingNotebook] = useState(null);
   
+  // 🔥 향상된 탭 기능 관련 상태
+  const [contextMenu, setContextMenu] = useState(null);
+  
   // 🔍 검색 및 정렬 상태
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('modifiedAt'); // 'modifiedAt', 'createdAt', 'title'
@@ -790,6 +786,30 @@ function SecureMemoApp() {
       setToast({ show: false, message: '', type: 'success' });
     }, duration);
   }, []);
+
+  // 🔥 향상된 탭 기능 관련 함수들
+  const showContextMenu = (e, notebook) => {
+    e.preventDefault();
+    
+    setContextMenu({
+      x: e.clientX,
+      y: e.clientY,
+      notebook: notebook
+    });
+  };
+
+  const hideContextMenu = () => {
+    setContextMenu(null);
+  };
+
+  // 클릭 외부 영역 감지
+  useEffect(() => {
+    if (contextMenu) {
+      const handleClick = () => hideContextMenu();
+      document.addEventListener('click', handleClick);
+      return () => document.removeEventListener('click', handleClick);
+    }
+  }, [contextMenu]);
 
   // 🔐 Google 로그인 설정
   const login = useGoogleLogin({
@@ -1658,7 +1678,7 @@ function SecureMemoApp() {
                 </button>
               </div>
               
-              {/* 🔥 향상된 노트북 탭 버튼들 - 우클릭 문제 해결 */}
+              {/* 🔥 향상된 노트북 탭 버튼들 */}
               <div 
                 className="notebook-tabs-container"
                 onWheel={(e) => {
@@ -1672,7 +1692,7 @@ function SecureMemoApp() {
                   onClick={() => setSelectedNotebookId('all')}
                   onContextMenu={(e) => e.preventDefault()}
                 >
-                  모든 메모 ({appData.memos.length})
+                  📋 모든 메모 ({appData.memos.length})
                 </button>
                 
                 {/* 노트북 탭들 */}
@@ -1681,33 +1701,9 @@ function SecureMemoApp() {
                     key={notebook.id}
                     className={`tab-button ${selectedNotebookId === notebook.id ? 'active' : ''}`}
                     onClick={() => setSelectedNotebookId(notebook.id)}
-                    onContextMenu={(e) => e.preventDefault()} // 우클릭 방지
+                    onContextMenu={(e) => showContextMenu(e, notebook)}
                   >
-                    {notebook.name} ({appData.memos.filter(m => m.notebookId === notebook.id).length})
-                    
-                    {/* 항상 보이는 편집/삭제 버튼 */}
-                    <div className="tab-actions">
-                      <button 
-                        className="tab-action-btn tab-edit-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingNotebook(notebook.id);
-                        }}
-                        title="이름 변경"
-                      >
-                        ✏
-                      </button>
-                      <button 
-                        className="tab-action-btn tab-delete-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteNotebook(notebook.id);
-                        }}
-                        title="삭제"
-                      >
-                        ✕
-                      </button>
-                    </div>
+                    📁 {notebook.name} ({appData.memos.filter(m => m.notebookId === notebook.id).length})
                   </button>
                 ))}
                 
@@ -1727,6 +1723,36 @@ function SecureMemoApp() {
                 </button>
               </div>
 
+              {/* 컨텍스트 메뉴 */}
+              {contextMenu && (
+                <div
+                  className="context-menu"
+                  style={{
+                    top: contextMenu.y,
+                    left: contextMenu.x
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div
+                    className="context-menu-item"
+                    onClick={() => {
+                      setEditingNotebook(contextMenu.notebook.id);
+                      hideContextMenu();
+                    }}
+                  >
+                    ✏️ 이름 변경
+                  </div>
+                  <div
+                    className="context-menu-item danger"
+                    onClick={() => {
+                      deleteNotebook(contextMenu.notebook.id);
+                      hideContextMenu();
+                    }}
+                  >
+                    🗑️ 삭제
+                  </div>
+                </div>
+              )}
 
               {/* 노트북 이름 편집 */}
               {editingNotebook && (
@@ -1964,30 +1990,6 @@ function SecureMemoApp() {
                       </div>
                       
                       <div style={{ display: 'flex', gap: '4px', marginLeft: '8px' }}>
-                        {/* 메모 이동 버튼 - 더 명확하게 표시 */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setMemoToMove(memo);
-                            setShowMoveModal(true);
-                          }}
-                          style={{
-                            background: 'none',
-                            border: `1px solid ${styles.border}`,
-                            cursor: 'pointer',
-                            padding: '6px 8px',
-                            fontSize: '12px',
-                            borderRadius: '6px',
-                            backgroundColor: '#17a2b8',
-                            color: 'white',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                          title="다른 노트북으로 이동"
-                        >
-                          📁 이동
-                        </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -1995,11 +1997,11 @@ function SecureMemoApp() {
                           }}
                           style={{
                             background: 'none',
-                            border: `1px solid ${styles.border}`,
+                            border: 'none',
                             cursor: 'pointer',
-                            padding: '6px 8px',
+                            padding: '4px',
                             fontSize: '12px',
-                            borderRadius: '6px',
+                            borderRadius: '4px',
                             backgroundColor: styles.dangerButton.backgroundColor,
                             color: 'white'
                           }}
