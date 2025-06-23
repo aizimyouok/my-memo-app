@@ -750,10 +750,10 @@ function SecureMemoApp() {
   // 🎛️ UI 상태
   const [selectedNotebookId, setSelectedNotebookId] = useState('all');
   const [selectedMemo, setSelectedMemo] = useState(null);
-  const [newNotebookName, setNewNotebookName] = useState('');
   const [newMemoContent, setNewMemoContent] = useState('');
   const [viewMode, setViewMode] = useState('edit');
-  const [editingNotebook, setEditingNotebook] = useState(null);
+  const [showNotebookPopup, setShowNotebookPopup] = useState(false); // 🎯 노트북 팝업 상태
+  const [popupNotebook, setPopupNotebook] = useState(null); // 🎯 팝업에서 선택된 노트북
   
   // 🔍 검색 및 정렬 상태
   const [searchQuery, setSearchQuery] = useState('');
@@ -1278,8 +1278,9 @@ function SecureMemoApp() {
     }
   };  
   // 📂 노트북 생성
-  const createNotebook = async () => {
-    if (!newNotebookName.trim()) {
+  // 📁 새 노트북 생성
+  const createNotebook = async (notebookName) => {
+    if (!notebookName || !notebookName.trim()) {
       showToast('노트북 이름을 입력해주세요.', 'error');
       return;
     }
@@ -1289,7 +1290,7 @@ function SecureMemoApp() {
       
       const newNotebook = {
         id: `notebook_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        name: newNotebookName,
+        name: notebookName.trim(),
         createdAt: new Date().toISOString(),
         modifiedAt: new Date().toISOString(),
         color: '#007bff'
@@ -1302,7 +1303,6 @@ function SecureMemoApp() {
       
       await saveEncryptedData(updatedData);
       setAppData(updatedData);
-      setNewNotebookName('');
       setSelectedNotebookId(newNotebook.id);
       
       showToast('노트북이 생성되었습니다!', 'success');
@@ -1336,7 +1336,6 @@ function SecureMemoApp() {
       
       await saveEncryptedData(updatedData);
       setAppData(updatedData);
-      setEditingNotebook(null);
       
       showToast('노트북 이름이 변경되었습니다!', 'success');
       
@@ -1347,6 +1346,62 @@ function SecureMemoApp() {
       setIsLoading(false);
     }
   };  
+  // 🎯 노트북 옵션 팝업 토글
+  const toggleNotebookPopup = (notebook, e) => {
+    e.stopPropagation();
+    if (showNotebookPopup && popupNotebook?.id === notebook.id) {
+      setShowNotebookPopup(false);
+      setPopupNotebook(null);
+    } else {
+      setPopupNotebook(notebook);
+      setShowNotebookPopup(true);
+      
+      // 클릭한 탭의 위치를 계산해서 팝업 위치 설정
+      setTimeout(() => {
+        const popup = document.getElementById('notebook-popup');
+        const tabButton = e.target.closest('.tab-button');
+        
+        if (popup && tabButton) {
+          const tabRect = tabButton.getBoundingClientRect();
+          const windowWidth = window.innerWidth;
+          const windowHeight = window.innerHeight;
+          
+          // 팝업 크기 (예상)
+          const popupWidth = 280;
+          const popupHeight = 160;
+          
+          // 탭 아래쪽에 위치시키기
+          let left = tabRect.left;
+          let top = tabRect.bottom + 8;
+          
+          // 화면 오른쪽을 벗어나면 조정
+          if (left + popupWidth > windowWidth) {
+            left = windowWidth - popupWidth - 20;
+          }
+          
+          // 화면 아래쪽을 벗어나면 탭 위쪽에 표시
+          if (top + popupHeight > windowHeight) {
+            top = tabRect.top - popupHeight - 8;
+          }
+          
+          // 최소값 보정
+          left = Math.max(20, left);
+          top = Math.max(20, top);
+          
+          popup.style.left = `${left}px`;
+          popup.style.top = `${top}px`;
+          popup.style.position = 'fixed';
+        }
+      }, 10);
+    }
+  };
+
+  // 🎯 팝업 닫기
+  const closeNotebookPopup = () => {
+    setShowNotebookPopup(false);
+    setPopupNotebook(null);
+  };
+
   // 🗑️ 노트북 삭제
   const deleteNotebook = async (notebookId) => {
     const notebook = appData.notebooks.find(nb => nb.id === notebookId);
@@ -1530,6 +1585,33 @@ function SecureMemoApp() {
       document.documentElement.style.backgroundColor = '';
     };
   }, [theme]);  
+
+  // 🎯 팝업 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // 오버레이 클릭하거나 팝업/버튼이 아닌 곳을 클릭하면 팝업 닫기
+      if (event.target.classList.contains('notebook-popup-overlay') || 
+          (!event.target.closest('.notebook-popup') && !event.target.closest('.tab-menu-btn'))) {
+        closeNotebookPopup();
+      }
+    };
+
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape') {
+        closeNotebookPopup();
+      }
+    };
+
+    if (showNotebookPopup) {
+      document.addEventListener('click', handleClickOutside);
+      document.addEventListener('keydown', handleEscKey);
+      return () => {
+        document.removeEventListener('click', handleClickOutside);
+        document.removeEventListener('keydown', handleEscKey);
+      };
+    }
+  }, [showNotebookPopup]);
+
   // 🎨 메인 렌더링
   return (
     <div style={styles.container}>
@@ -1599,7 +1681,7 @@ function SecureMemoApp() {
                 {user?.picture && <img src={user.picture} alt="Profile" style={styles.profileImage} />}
                 <div>
                   <div style={{ fontWeight: '600' }}>{user?.name}</div>
-                  <div style={{ fontSize: '10px', color: styles.textSecondary, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ fontSize: '12px', color: styles.textSecondary, display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
                     <span style={{ color: styles.success }}>🔐 암호화됨</span>
                     <span>📝 {appData.memos.length}개</span>
                     <span>📁 {appData.notebooks.length}개</span>
@@ -1625,140 +1707,15 @@ function SecureMemoApp() {
               </div>
             </div>            
             {/* 노트북 섹션 */}
-            <div style={styles.section}>
-              <div style={styles.sectionTitle}>
-                📁 노트북
-              </div>
-              
-              {/* 새 노트북 생성 */}
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <input
-                  type="text"
-                  placeholder="새 노트북 이름..."
-                  value={newNotebookName}
-                  onChange={(e) => setNewNotebookName(e.target.value)}
-                  style={{...styles.input, flex: 1, width: '0'}}
-                  onKeyPress={(e) => e.key === 'Enter' && createNotebook()}
-                />
-                <button
-                  onClick={createNotebook}
-                  style={{
-                    ...styles.button, 
-                    ...styles.primaryButton, 
-                    padding: '8px', 
-                    width: '32px', 
-                    minWidth: '32px',
-                    height: '32px',
-                    fontSize: '14px'
-                  }}
-                  disabled={!newNotebookName.trim()}
-                  title="노트북 생성"
-                >
-                  ➕
-                </button>
-              </div>
-              
-              {/* 🔥 향상된 노트북 탭 버튼들 - 우클릭 문제 해결 */}
-              <div 
-                className="notebook-tabs-container"
-                onWheel={(e) => {
-                  e.preventDefault();
-                  e.currentTarget.scrollLeft += e.deltaY;
-                }}
-              >
-                {/* 전체 메모 탭 */}
-                <button
-                  className={`tab-button ${selectedNotebookId === 'all' ? 'active' : ''}`}
-                  onClick={() => setSelectedNotebookId('all')}
-                  onContextMenu={(e) => e.preventDefault()}
-                >
-                  모든 메모 ({appData.memos.length})
-                </button>
-                
-                {/* 노트북 탭들 */}
-                {appData.notebooks.map(notebook => (
-                  <button
-                    key={notebook.id}
-                    className={`tab-button ${selectedNotebookId === notebook.id ? 'active' : ''}`}
-                    onClick={() => setSelectedNotebookId(notebook.id)}
-                    onContextMenu={(e) => e.preventDefault()} // 우클릭 방지
-                  >
-                    {notebook.name} ({appData.memos.filter(m => m.notebookId === notebook.id).length})
-                    
-                    {/* 항상 보이는 편집/삭제 버튼 */}
-                    <div className="tab-actions">
-                      <button 
-                        className="tab-action-btn tab-edit-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingNotebook(notebook.id);
-                        }}
-                        title="이름 변경"
-                      >
-                        ✏
-                      </button>
-                      <button 
-                        className="tab-action-btn tab-delete-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteNotebook(notebook.id);
-                        }}
-                        title="삭제"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </button>
-                ))}
-                
-                {/* 새 노트북 추가 탭 */}
-                <button
-                  className="tab-button add-new"
-                  onClick={() => {
-                    const name = prompt('새 노트북 이름을 입력하세요:');
-                    if (name && name.trim()) {
-                      setNewNotebookName(name.trim());
-                      createNotebook();
-                    }
-                  }}
-                  title="새 노트북 추가"
-                >
-                  ➕ 새 노트북
-                </button>
-              </div>
-
-
-              {/* 노트북 이름 편집 */}
-              {editingNotebook && (
-                <div style={{ marginTop: '16px' }}>
-                  <input
-                    type="text"
-                    defaultValue={appData.notebooks.find(nb => nb.id === editingNotebook)?.name || ''}
-                    autoFocus
-                    onBlur={(e) => {
-                      if (e.target.value.trim()) {
-                        updateNotebook(editingNotebook, e.target.value.trim());
-                      } else {
-                        setEditingNotebook(null);
-                      }
-                    }}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        updateNotebook(editingNotebook, e.target.value.trim());
-                      } else if (e.key === 'Escape') {
-                        setEditingNotebook(null);
-                      }
-                    }}
-                    style={{...styles.input, width: '100%'}}
-                  />
-                </div>
-              )}
-            </div>            
-            {/* 메모 섹션 */}
-            <div style={styles.section}>
+            {/* 메모 헤더 섹션 - 구분선 제거 */}
+            <div style={{...styles.section, paddingBottom: '12px', marginBottom: 0, borderBottom: 'none'}}>
               <div style={styles.sectionTitle}>
                 📝 메모 ({getFilteredMemos().length})
               </div>
+            </div>
+            
+            {/* 메모 검색/정렬 섹션 */}
+            <div style={{...styles.section, paddingTop: '8px'}}>
               
               {/* 검색 및 정렬 */}
               <div style={{ marginBottom: '16px' }}>
@@ -2047,8 +2004,105 @@ function SecureMemoApp() {
             </div>
           </div>          
           {/* 오른쪽 패널 - 에디터 */}
-          <div style={styles.rightPanel}>
-            {selectedMemo ? (
+          <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', backgroundColor: styles.panelBg }}>
+            {/* 🎯 노트북 탭 - 우측 상단으로 이동 (항상 표시) */}
+            <div 
+              className="notebook-tabs-container-right"
+              onWheel={(e) => {
+                e.preventDefault();
+                e.currentTarget.scrollLeft += e.deltaY;
+              }}
+            >
+              {/* 전체 메모 탭 */}
+              <button
+                className={`tab-button ${selectedNotebookId === 'all' ? 'active' : ''}`}
+                onClick={() => setSelectedNotebookId('all')}
+                onContextMenu={(e) => e.preventDefault()}
+              >
+                모든 메모 ({appData.memos.length})
+              </button>
+              
+              {/* 노트북 탭들 - 모달 팝업 방식 */}
+              {appData.notebooks.map(notebook => (
+                <div key={notebook.id} className="tab-wrapper">
+                  <button
+                    className={`tab-button ${selectedNotebookId === notebook.id ? 'active' : ''}`}
+                    onClick={() => setSelectedNotebookId(notebook.id)}
+                  >
+                    <span className="tab-text">
+                      {notebook.name} ({appData.memos.filter(m => m.notebookId === notebook.id).length})
+                    </span>
+                    
+                    {/* 옵션 메뉴 버튼 */}
+                    <button 
+                      className="tab-menu-btn"
+                      onClick={(e) => toggleNotebookPopup(notebook, e)}
+                      title="옵션"
+                    >
+                      ⋯
+                    </button>
+                  </button>
+                </div>
+              ))}
+              
+              {/* 새 노트북 추가 탭 */}
+              <button
+                className="tab-button add-new"
+                onClick={() => {
+                  const name = prompt('새 노트북 이름을 입력하세요:');
+                  if (name && name.trim()) {
+                    createNotebook(name.trim());
+                  }
+                }}
+                title="새 노트북 추가"
+              >
+                ➕ 새 노트북
+              </button>
+            </div>
+
+            {/* 🎯 노트북 옵션 모달 팝업 - 탭 근처에 위치 */}
+            {showNotebookPopup && popupNotebook && (
+              <div className="notebook-popup-overlay">
+                <div className="notebook-popup" id="notebook-popup">
+                  <div className="popup-header">
+                    <h4>📁 {popupNotebook.name}</h4>
+                    <button 
+                      className="popup-close-btn"
+                      onClick={closeNotebookPopup}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="popup-actions">
+                    <button 
+                      className="popup-action-btn edit"
+                      onClick={() => {
+                        const newName = prompt('새 노트북 이름을 입력하세요:', popupNotebook.name);
+                        if (newName && newName.trim() && newName.trim() !== popupNotebook.name) {
+                          updateNotebook(popupNotebook.id, newName.trim());
+                        }
+                        closeNotebookPopup();
+                      }}
+                    >
+                      ✏️ 이름 변경
+                    </button>
+                    <button 
+                      className="popup-action-btn delete"
+                      onClick={() => {
+                        deleteNotebook(popupNotebook.id);
+                        closeNotebookPopup();
+                      }}
+                    >
+                      🗑️ 삭제
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 메모 에디터 영역 */}
+            <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+              {selectedMemo ? (
               <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                 {/* 에디터 헤더 */}
                 <div style={{ 
@@ -2095,36 +2149,37 @@ function SecureMemoApp() {
                   />
                 </div>
               </div>
-            ) : (
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100%',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔐</div>
-                <h2>보안 메모장</h2>
-                <p style={{ color: styles.textSecondary, maxWidth: '400px' }}>
-                  왼쪽에서 메모를 선택하거나 새로운 메모를 작성해보세요.<br/>
-                  모든 데이터는 AES 암호화로 안전하게 보호됩니다.
-                </p>
-                
-                <div style={{ marginTop: '32px', textAlign: 'left' }}>
-                  <h4>✨ 주요 기능</h4>
-                  <ul style={{ lineHeight: 1.6 }}>
-                    <li>🔐 전체 데이터 AES 암호화</li>
-                    <li>📁 노트북으로 메모 정리</li>
-                    <li>🗑️ 휴지통 및 복구 기능</li>
-                    <li>💾 자동 백업 시스템</li>
-                    <li>📤 데이터 내보내기/가져오기</li>
-                    <li>🌙 다크/라이트 테마</li>
-                    <li>🎯 향상된 탭 기능 (우클릭 메뉴)</li>
-                  </ul>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  height: '100%',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔐</div>
+                  <h2>보안 메모장</h2>
+                  <p style={{ color: styles.textSecondary, maxWidth: '400px' }}>
+                    왼쪽에서 메모를 선택하거나 새로운 메모를 작성해보세요.<br/>
+                    모든 데이터는 AES 암호화로 안전하게 보호됩니다.
+                  </p>
+                  
+                  <div style={{ marginTop: '32px', textAlign: 'left' }}>
+                    <h4>✨ 주요 기능</h4>
+                    <ul style={{ lineHeight: 1.6 }}>
+                      <li>🔐 전체 데이터 AES 암호화</li>
+                      <li>📁 노트북으로 메모 정리</li>
+                      <li>🗑️ 휴지통 및 복구 기능</li>
+                      <li>💾 자동 백업 시스템</li>
+                      <li>📤 데이터 내보내기/가져오기</li>
+                      <li>🌙 다크/라이트 테마</li>
+                      <li>🎯 향상된 팝업 옵션 메뉴</li>
+                    </ul>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </>
       )}      
