@@ -1646,6 +1646,7 @@ function SecureMemoApp() {
               </ul>
             </div>
             
+            {/* 임시로 Google 로그인 비활성화
             <button 
               style={{...styles.button, ...styles.primaryButton}}
               onClick={login}
@@ -1653,6 +1654,7 @@ function SecureMemoApp() {
               <Icons.Key />
               Google로 로그인
             </button>
+            */}
             
             <button 
               style={{
@@ -2387,11 +2389,7 @@ function SecureMemoApp() {
 }
 // 🎯 최종 앱 컴포넌트
 function App() {
-  return (
-    <GoogleOAuthProvider clientId={CLIENT_ID}>
-      <SecureMemoApp />
-    </GoogleOAuthProvider>
-  );
+  return <SecureMemoApp />;
 }
 
 export default App;
