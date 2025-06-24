@@ -1647,16 +1647,13 @@ function SecureMemoApp() {
               </ul>
             </div>
             
-            {/* 로컬 개발환경에서만 Google 로그인 표시 */}
-            {window.location.hostname === 'localhost' && (
-              <button 
-                style={{...styles.button, ...styles.primaryButton}}
-                onClick={login}
-              >
-                <Icons.Key />
-                Google로 로그인
-              </button>
-            )}
+            <button 
+              style={{...styles.button, ...styles.primaryButton}}
+              onClick={login}
+            >
+              <Icons.Key />
+              Google로 로그인
+            </button>
             
             <button 
               style={{
