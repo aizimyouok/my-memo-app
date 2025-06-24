@@ -1653,6 +1653,30 @@ function SecureMemoApp() {
               <Icons.Key />
               Google로 로그인
             </button>
+            
+            <button 
+              style={{
+                ...styles.button, 
+                backgroundColor: '#6c757d',
+                marginTop: '10px'
+              }}
+              onClick={() => {
+                // 로컬 모드 - Google 인증 없이 사용
+                setUser({
+                  name: '로컬 사용자',
+                  email: 'local@memo.app',
+                  picture: ''
+                });
+                Storage.save('user', {
+                  name: '로컬 사용자',
+                  email: 'local@memo.app',
+                  picture: ''
+                });
+                showToast('로컬 모드로 시작합니다! 데이터는 브라우저에만 저장됩니다.', 'info', 4000);
+              }}
+            >
+              💾 로컬 모드로 사용하기
+            </button>
           </div>
         </div>
       )}
