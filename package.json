@@ -1,7 +1,11 @@
 {
   "name": "my-memo-app",
   "version": "0.1.0",
+  "description": "AES 암호화로 보호되는 안전한 메모장 앱",
+  "author": "Your Name <your.email@example.com>",
   "private": true,
+  "main": "electron.js",
+  "homepage": "./",
   "dependencies": {
     "@craco/craco": "^7.1.0",
     "@react-oauth/google": "^0.12.2",
@@ -14,6 +18,7 @@
     "buffer": "^6.0.3",
     "crypto-js": "^4.2.0",
     "dompurify": "^3.2.6",
+    "electron-is-dev": "^3.0.1",
     "https-browserify": "^1.0.0",
     "jwt-decode": "^4.0.0",
     "marked": "^15.0.12",
@@ -32,7 +37,11 @@
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "electron": "electron .",
+    "electron-dev": "ELECTRON_IS_DEV=true electron .",
+    "electron-pack": "npm run build && electron-builder",
+    "preelectron-pack": "npm run build"
   },
   "eslintConfig": {
     "extends": [
@@ -51,5 +60,38 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "electron": "^36.5.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.mycompany.my-memo-app",
+    "productName": "보안 메모장",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "build/**/*",
+      "electron.js"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/logo512.png"
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "Office"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   }
 }

@@ -777,6 +777,10 @@ function SecureMemoApp() {
   const [privateMemoUnlockPassword, setPrivateMemoUnlockPassword] = useState('');
   const [privateMemoUnlockError, setPrivateMemoUnlockError] = useState('');
   
+  // 📄 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  
   // ⚙️ 자동 백업 설정
   const [autoBackupEnabled, setAutoBackupEnabled] = useState(() => Storage.load('auto-backup-enabled') || false);
   const [autoBackupInterval, setAutoBackupInterval] = useState(() => Storage.load('auto-backup-interval') || 30); // 분 단위
@@ -1549,6 +1553,31 @@ function SecureMemoApp() {
     
     return filteredMemos;
   };
+  
+  // 📄 페이지네이션 관련 함수들
+  const getPaginatedMemos = () => {
+    const filteredMemos = getFilteredMemos();
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredMemos.slice(startIndex, endIndex);
+  };
+  
+  const getTotalPages = () => {
+    const filteredMemos = getFilteredMemos();
+    return Math.ceil(filteredMemos.length / itemsPerPage);
+  };
+  
+  const goToPage = (page) => {
+    const totalPages = getTotalPages();
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+  
+  // 검색어나 필터 변경 시 첫 페이지로 이동
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedNotebookId, sortBy, sortOrder]);
 
   // 🚀 앱 시작 시 토큰 복원
   useEffect(() => {
@@ -1735,7 +1764,17 @@ function SecureMemoApp() {
             {/* 메모 헤더 섹션 - 구분선 제거 */}
             <div style={{...styles.section, paddingBottom: '12px', marginBottom: 0, borderBottom: 'none'}}>
               <div style={styles.sectionTitle}>
-                📝 메모 ({getFilteredMemos().length})
+                📝 메모 ({getFilteredMemos().length}개)
+                {getFilteredMemos().length > itemsPerPage && (
+                  <span style={{ 
+                    fontSize: '12px', 
+                    fontWeight: 'normal', 
+                    color: styles.textSecondary,
+                    marginLeft: '8px'
+                  }}>
+                    • {currentPage}/{getTotalPages()} 페이지
+                  </span>
+                )}
               </div>
             </div>
             
@@ -1890,9 +1929,9 @@ function SecureMemoApp() {
                 </button>
               </div>              
               {/* 메모 목록 */}
-              <div style={{ flex: 1, overflowY: 'auto' }}>
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
                 <ul style={styles.list}>
-                  {getFilteredMemos().map(memo => (
+                  {getPaginatedMemos().map(memo => (
                     <li
                       key={memo.id}
                       style={{
@@ -1993,6 +2032,102 @@ function SecureMemoApp() {
                     </li>
                   ))}
                 </ul>
+                
+                {/* 📄 페이지네이션 컨트롤 */}
+                {getFilteredMemos().length > itemsPerPage && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px',
+                    borderTop: `1px solid ${styles.border}`,
+                    backgroundColor: styles.panelBg,
+                    marginTop: 'auto'
+                  }}>
+                    {/* 이전 페이지 버튼 */}
+                    <button
+                      onClick={() => goToPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      style={{
+                        ...styles.iconButton,
+                        padding: '6px 10px',
+                        fontSize: '12px',
+                        backgroundColor: currentPage === 1 ? 'transparent' : styles.accent,
+                        color: currentPage === 1 ? styles.textSecondary : 'white',
+                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                      }}
+                      title="이전 페이지"
+                    >
+                      ← 이전
+                    </button>
+                    
+                    {/* 페이지 번호들 */}
+                    {(() => {
+                      const totalPages = getTotalPages();
+                      const pageNumbers = [];
+                      const maxVisiblePages = 5;
+                      
+                      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+                      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+                      
+                      // 끝 페이지가 총 페이지보다 작으면 시작 페이지 조정
+                      if (endPage - startPage + 1 < maxVisiblePages) {
+                        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+                      }
+                      
+                      for (let i = startPage; i <= endPage; i++) {
+                        pageNumbers.push(
+                          <button
+                            key={i}
+                            onClick={() => goToPage(i)}
+                            style={{
+                              ...styles.iconButton,
+                              padding: '6px 10px',
+                              fontSize: '12px',
+                              backgroundColor: i === currentPage ? styles.accent : 'transparent',
+                              color: i === currentPage ? 'white' : styles.text,
+                              fontWeight: i === currentPage ? '600' : 'normal',
+                              minWidth: '32px'
+                            }}
+                          >
+                            {i}
+                          </button>
+                        );
+                      }
+                      
+                      return pageNumbers;
+                    })()}
+                    
+                    {/* 다음 페이지 버튼 */}
+                    <button
+                      onClick={() => goToPage(currentPage + 1)}
+                      disabled={currentPage === getTotalPages()}
+                      style={{
+                        ...styles.iconButton,
+                        padding: '6px 10px',
+                        fontSize: '12px',
+                        backgroundColor: currentPage === getTotalPages() ? 'transparent' : styles.accent,
+                        color: currentPage === getTotalPages() ? styles.textSecondary : 'white',
+                        cursor: currentPage === getTotalPages() ? 'not-allowed' : 'pointer'
+                      }}
+                      title="다음 페이지"
+                    >
+                      다음 →
+                    </button>
+                    
+                    {/* 페이지 정보 표시 */}
+                    <div style={{
+                      fontSize: '11px',
+                      color: styles.textSecondary,
+                      marginLeft: '12px',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {currentPage}/{getTotalPages()} 페이지 
+                      (총 {getFilteredMemos().length}개)
+                    </div>
+                  </div>
+                )}
               </div>
               
               {/* 하단 버튼들을 오른쪽으로 이동 */}
