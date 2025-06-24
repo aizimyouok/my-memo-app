@@ -1890,7 +1890,7 @@ function SecureMemoApp() {
                 </button>
               </div>              
               {/* 메모 목록 */}
-              <div style={{ height: '300px', overflowY: 'auto', border: `1px solid ${styles.border}`, borderRadius: '8px', marginBottom: '16px' }}>
+              <div style={{ flex: 1, overflowY: 'auto', border: `1px solid ${styles.border}`, borderRadius: '8px', marginBottom: '16px' }}>
                 <ul style={styles.list}>
                   {getFilteredMemos().map(memo => (
                     <li
@@ -1995,7 +1995,8 @@ function SecureMemoApp() {
                 </ul>
               </div>
               
-              {/* 하단 버튼들 */}
+              {/* 하단 버튼들을 오른쪽으로 이동 */}
+              {/* 
               <div style={{ display: 'flex', gap: '6px' }}>
                 <button
                   onClick={() => setShowSettingsModal(true)}
@@ -2026,6 +2027,7 @@ function SecureMemoApp() {
                   휴지통
                 </button>
               </div>
+              */}
             </div>
           </div>          
           {/* 오른쪽 패널 - 에디터 */}
@@ -2173,6 +2175,41 @@ function SecureMemoApp() {
                     placeholder="메모를 작성하세요..."
                   />
                 </div>
+                
+                {/* 하단 버튼들 */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'flex-end', 
+                  gap: '8px', 
+                  marginTop: '16px',
+                  paddingTop: '16px',
+                  borderTop: `1px solid ${styles.border}`
+                }}>
+                  <button
+                    onClick={() => setShowSettingsModal(true)}
+                    style={{
+                      ...styles.button, 
+                      ...styles.primaryButton, 
+                      fontSize: '12px',
+                      padding: '8px 12px'
+                    }}
+                    title="설정"
+                  >
+                    ⚙️ 설정
+                  </button>
+                  <button
+                    onClick={() => setShowTrashModal(true)}
+                    style={{
+                      ...styles.button, 
+                      ...styles.dangerButton, 
+                      fontSize: '12px',
+                      padding: '8px 12px'
+                    }}
+                    title="휴지통"
+                  >
+                    🗑️ 휴지통
+                  </button>
+                </div>
               </div>
               ) : (
                 <div style={{
@@ -2201,6 +2238,39 @@ function SecureMemoApp() {
                       <li>🌙 다크/라이트 테마</li>
                       <li>🎯 향상된 팝업 옵션 메뉴</li>
                     </ul>
+                  </div>
+                  
+                  {/* 하단 버튼들 */}
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    gap: '12px', 
+                    marginTop: '40px'
+                  }}>
+                    <button
+                      onClick={() => setShowSettingsModal(true)}
+                      style={{
+                        ...styles.button, 
+                        ...styles.primaryButton, 
+                        fontSize: '14px',
+                        padding: '10px 16px'
+                      }}
+                      title="설정"
+                    >
+                      ⚙️ 설정
+                    </button>
+                    <button
+                      onClick={() => setShowTrashModal(true)}
+                      style={{
+                        ...styles.button, 
+                        ...styles.dangerButton, 
+                        fontSize: '14px',
+                        padding: '10px 16px'
+                      }}
+                      title="휴지통"
+                    >
+                      🗑️ 휴지통
+                    </button>
                   </div>
                 </div>
               )}
