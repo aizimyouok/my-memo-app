@@ -285,13 +285,13 @@ const getThemeStyles = (theme = 'light') => {
     
     // 섹션
     section: { 
-      padding: '20px',
+      padding: '12px 20px',
       borderBottom: `1px solid ${c.border}`
     },
     sectionTitle: {
       fontSize: '18px',
       fontWeight: '600',
-      marginBottom: '16px',
+      marginBottom: '8px',
       display: 'flex',
       alignItems: 'center',
       gap: '8px'
@@ -1740,12 +1740,12 @@ function SecureMemoApp() {
             </div>
             
             {/* 메모 검색/정렬 섹션 */}
-            <div style={{...styles.section, paddingTop: '8px'}}>
+            <div style={{...styles.section, paddingTop: '4px', paddingBottom: '8px'}}>
               
               {/* 검색 및 정렬 */}
-              <div style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: '8px' }}>
                 {/* 검색 바 */}
-                <div style={{ position: 'relative', marginBottom: '12px' }}>
+                <div style={{ position: 'relative', marginBottom: '8px' }}>
                   <input
                     type="text"
                     placeholder="🔍 메모 검색..."
@@ -1814,7 +1814,7 @@ function SecureMemoApp() {
               </div>
               
               {/* 새 메모 작성 */}
-              <div style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: '8px' }}>
                 <textarea
                   placeholder="새 메모 작성..."
                   value={newMemoContent}
@@ -1890,7 +1890,7 @@ function SecureMemoApp() {
                 </button>
               </div>              
               {/* 메모 목록 */}
-              <div style={{ flex: 1, overflowY: 'auto', border: `1px solid ${styles.border}`, borderRadius: '8px', marginBottom: '16px' }}>
+              <div style={{ flex: 1, overflowY: 'auto' }}>
                 <ul style={styles.list}>
                   {getFilteredMemos().map(memo => (
                     <li
