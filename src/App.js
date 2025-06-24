@@ -824,7 +824,7 @@ function SecureMemoApp() {
       showToast('로그인에 실패했습니다.', 'error');
     },
     scope: SCOPES,
-    flow: 'auth-code',  // 명시적으로 authorization code flow 사용
+    // flow: 'auth-code',  // popup 모드 사용 (redirect_uri 불필요)
   });  
   // 🚪 로그아웃
   const handleLogout = () => {
