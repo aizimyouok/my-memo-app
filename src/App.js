@@ -8,7 +8,7 @@
 // ✅ 탭 아이콘 제거 및 가로 길이 축소 - 더 컴팩트한 디자인
 // ✅ 컨텍스트 메뉴 완전 제거 - 직관적인 버튼 인터페이스로 개선
 
-import { GoogleOAuthProvider, /*googleLogout,*/ useGoogleLogin } from '@react-oauth/google';
+import { GoogleOAuthProvider, googleLogout, useGoogleLogin } from '@react-oauth/google';
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import CryptoJS from 'crypto-js';
@@ -791,12 +791,7 @@ function SecureMemoApp() {
     }, duration);
   }, []);
 
-  // 🔐 Google 로그인 설정 (임시 비활성화)
-  const login = () => {
-    console.log('Google 로그인이 비활성화되었습니다. 로컬 모드를 사용하세요.');
-  };
-  
-  /* 원본 Google 로그인 코드 (임시 주석)
+  // 🔐 Google 로그인 설정
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       console.log('🎉 로그인 성공');
@@ -829,11 +824,10 @@ function SecureMemoApp() {
       showToast('로그인에 실패했습니다.', 'error');
     },
     scope: SCOPES,
-  });
-  */  
+  });  
   // 🚪 로그아웃
   const handleLogout = () => {
-    // googleLogout(); // 임시 비활성화
+    googleLogout();
     setUser(null);
     setAccessToken(null);
     setIsUnlocked(false);
@@ -1652,7 +1646,6 @@ function SecureMemoApp() {
               </ul>
             </div>
             
-            {/* 임시로 Google 로그인 비활성화
             <button 
               style={{...styles.button, ...styles.primaryButton}}
               onClick={login}
@@ -1660,7 +1653,6 @@ function SecureMemoApp() {
               <Icons.Key />
               Google로 로그인
             </button>
-            */}
             
             <button 
               style={{
@@ -2395,7 +2387,11 @@ function SecureMemoApp() {
 }
 // 🎯 최종 앱 컴포넌트
 function App() {
-  return <SecureMemoApp />;
+  return (
+    <GoogleOAuthProvider clientId={CLIENT_ID}>
+      <SecureMemoApp />
+    </GoogleOAuthProvider>
+  );
 }
 
 export default App;
