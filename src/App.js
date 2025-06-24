@@ -16,7 +16,7 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import './enhanced-tabs.css';
 
-const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '656430754313-hq9aecvdkdgqu0gbkrfj95c16npv8rv0.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive';
 
 // 🔐 보안 설정
