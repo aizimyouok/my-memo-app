@@ -16,7 +16,7 @@ import CryptoJS from 'crypto-js';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import './enhanced-tabs.css';
-import './mobile.css';
+import { useIsMobile, getMobileOptimizedStyles } from './MobileStyles';
 
 const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '656430754313-hq9aecvdkdgqu0gbkrfj95c16npv8rv0.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive';
@@ -717,23 +717,9 @@ const SecurityStatus = ({ isSecure, dataCount, lastBackup, styles }) => {
 // 🎯 메인 보안 메모장 앱
 function SecureMemoApp() {
   // 📱 모바일 감지
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   const [theme, setTheme] = useState(() => Storage.load('theme') || 'light');
-  const styles = getThemeStyles(theme);
-  
-  // 📱 모바일 감지 로직
-  useEffect(() => {
-    const checkIfMobile = () => {
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
-      const isSmallScreen = window.innerWidth < 768;
-      setIsMobile(isMobileDevice || isSmallScreen);
-    };
-
-    checkIfMobile();
-    window.addEventListener('resize', checkIfMobile);
-    return () => window.removeEventListener('resize', checkIfMobile);
-  }, []);
+  const styles = getMobileOptimizedStyles(theme, isMobile);
 
   // 🔐 인증 및 보안 상태
   const [user, setUser] = useState(null);
@@ -1662,7 +1648,7 @@ function SecureMemoApp() {
 
   // 🎨 메인 렌더링
   return (
-    <div style={styles.container} className={isMobile ? 'main-container' : ''}>
+    <div style={styles.container}>
       {/* 로딩 스피너 */}
       {isLoading && <Spinner styles={styles} />}
       
@@ -1671,8 +1657,8 @@ function SecureMemoApp() {
       
       {/* 🔐 로그인하지 않은 경우 */}
       {!accessToken && (
-        <div style={styles.securityContainer} className="mobile-security-container">
-          <div style={styles.securityCard} className="mobile-security-card">
+        <div style={styles.securityContainer}>
+          <div style={styles.securityCard}>
             <div style={styles.securityHeader}>
               <div style={styles.securityIcon}>🔐</div>
               <h1>보안 메모장</h1>
@@ -1746,10 +1732,10 @@ function SecureMemoApp() {
       {accessToken && isPasswordSet && isUnlocked && (
         <>
           {/* 왼쪽 패널 */}
-          <div style={styles.leftPanel} className={isMobile ? 'left-panel mobile-scroll' : ''}>
+          <div style={styles.leftPanel}>
             {/* 헤더 */}
-            <div style={styles.header} className={isMobile ? 'app-header' : ''}>
-              <div style={styles.profileSection} className={isMobile ? 'profile-section' : ''}>
+            <div style={styles.header}>
+              <div style={styles.profileSection}>
                 {user?.picture && <img src={user.picture} alt="Profile" style={styles.profileImage} />}
                 <div>
                   <div style={{ fontWeight: '600' }}>{user?.name}</div>
@@ -1884,7 +1870,6 @@ function SecureMemoApp() {
                     width: 'calc(100% - 24px)',
                     maxWidth: '400px'
                   }}
-                  className={isMobile ? 'mobile-input' : ''}
                 />
                 
                 {/* 개별 비밀번호 설정 */}
@@ -1942,7 +1927,6 @@ function SecureMemoApp() {
                 <button
                   onClick={createMemo}
                   style={{...styles.button, ...styles.successButton, width: '100%', maxWidth: '412px'}}
-                  className={isMobile ? 'mobile-button' : ''}
                   disabled={!newMemoContent.trim() || (isPrivateMemo && !privateMemoPassword.trim())}
                 >
                   💾 메모 저장
@@ -1961,7 +1945,6 @@ function SecureMemoApp() {
                         alignItems: 'center',
                         justifyContent: 'space-between'
                       }}
-                      className={isMobile ? 'mobile-list-item' : ''}
                       onClick={() => handleMemoSelect(memo)}
                     >
                       <div style={{ 
@@ -2187,7 +2170,7 @@ function SecureMemoApp() {
             </div>
           </div>          
           {/* 오른쪽 패널 - 에디터 */}
-          <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', backgroundColor: styles.panelBg }} className={isMobile ? 'right-panel mobile-scroll' : ''}>
+          <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', backgroundColor: styles.panelBg }}>
             {/* 🎯 노트북 탭 - 우측 상단으로 이동 (항상 표시) */}
             <div 
               className="notebook-tabs-container-right"
@@ -2328,7 +2311,6 @@ function SecureMemoApp() {
                       border: `1px solid ${styles.border}`,
                       borderRadius: '8px'
                     }}
-                    className={isMobile ? 'mobile-editor mobile-scroll' : ''}
                     placeholder="메모를 작성하세요..."
                   />
                 </div>
