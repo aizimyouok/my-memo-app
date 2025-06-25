@@ -13,7 +13,9 @@ import { GoogleOAuthProvider, googleLogout, useGoogleLogin } from '@react-oauth/
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import CryptoJS from 'crypto-js';
+// eslint-disable-next-line no-unused-vars
 import { marked } from 'marked';
+// eslint-disable-next-line no-unused-vars
 import DOMPurify from 'dompurify';
 import './enhanced-tabs.css';
 import './mobile.css';
@@ -24,7 +26,9 @@ const SCOPES = 'https://www.googleapis.com/auth/drive';
 // 🔐 보안 설정
 const APP_FOLDER_NAME = 'SecureMemoApp';
 const ENCRYPTED_DATA_FILE = 'secure_memo_data.enc';
+// eslint-disable-next-line no-unused-vars
 const METADATA_FILE = 'app_metadata.json';
+// eslint-disable-next-line no-unused-vars
 const BACKUP_PREFIX = 'backup_';
 
 // 🔑 암호화/복호화 유틸리티
@@ -688,6 +692,7 @@ const PasswordUnlock = ({ onPasswordEnter, styles, error, attempts = 0 }) => {
 };
 
 // 📊 보안 상태 표시 컴포넌트
+// eslint-disable-next-line no-unused-vars
 const SecurityStatus = ({ isSecure, dataCount, lastBackup, styles }) => {
   return (
     <div style={styles.section}>
@@ -769,6 +774,7 @@ function SecureMemoApp() {
   const [selectedNotebookId, setSelectedNotebookId] = useState('all');
   const [selectedMemo, setSelectedMemo] = useState(null);
   const [newMemoContent, setNewMemoContent] = useState('');
+  // eslint-disable-next-line no-unused-vars
   const [viewMode, setViewMode] = useState('edit');
   const [showNotebookPopup, setShowNotebookPopup] = useState(false); // 🎯 노트북 팝업 상태
   const [popupNotebook, setPopupNotebook] = useState(null); // 🎯 팝업에서 선택된 노트북
@@ -784,12 +790,16 @@ function SecureMemoApp() {
   const [showPrivatePassword, setShowPrivatePassword] = useState(false);
 
   // 모달 상태들
+  // eslint-disable-next-line no-unused-vars
   const [showMoveModal, setShowMoveModal] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [showBackupModal, setShowBackupModal] = useState(false);
   const [showTrashModal, setShowTrashModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showPrivateMemoModal, setShowPrivateMemoModal] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [memoToMove, setMemoToMove] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [targetNotebookId, setTargetNotebookId] = useState('');
   const [privateMemoToUnlock, setPrivateMemoToUnlock] = useState(null);
   const [privateMemoUnlockPassword, setPrivateMemoUnlockPassword] = useState('');
@@ -800,9 +810,13 @@ function SecureMemoApp() {
   const [itemsPerPage] = useState(10);
   
   // ⚙️ 자동 백업 설정
+  // eslint-disable-next-line no-unused-vars
   const [autoBackupEnabled, setAutoBackupEnabled] = useState(() => Storage.load('auto-backup-enabled') || false);
+  // eslint-disable-next-line no-unused-vars
   const [autoBackupInterval, setAutoBackupInterval] = useState(() => Storage.load('auto-backup-interval') || 30); // 분 단위
+  // eslint-disable-next-line no-unused-vars
   const [lastAutoBackup, setLastAutoBackup] = useState(() => Storage.load('last-auto-backup') || null);
+  // eslint-disable-next-line no-unused-vars
   const [autoBackupTimer, setAutoBackupTimer] = useState(null);  
   // 🎉 토스트 메시지 표시
   const showToast = useCallback((message, type = 'success', duration = 3000) => {

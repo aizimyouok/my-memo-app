@@ -1,4 +1,6 @@
 // 📱 모바일 최적화 유틸리티
+import { useState, useEffect } from 'react';
+
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
 
