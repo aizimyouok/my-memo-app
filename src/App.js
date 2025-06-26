@@ -21,7 +21,7 @@ import './enhanced-tabs.css';
 import './mobile.css';
 
 const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '656430754313-hq9aecvdkdgqu0gbkrfj95c16npv8rv0.apps.googleusercontent.com';
-const SCOPES = 'https://www.googleapis.com/auth/drive';
+const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
 
 // 🔐 보안 설정
 const APP_FOLDER_NAME = 'SecureMemoApp';
