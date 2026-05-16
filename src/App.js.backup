@@ -19,6 +19,10 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import './enhanced-tabs.css';
 import './mobile.css';
+import BottomTabs from './components/BottomTabs';
+import MobileMemosTab from './components/MobileMemosTab';
+import MobileNotebooksTab from './components/MobileNotebooksTab';
+import MobileSettingsTab from './components/MobileSettingsTab';
 
 const CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '656430754313-hq9aecvdkdgqu0gbkrfj95c16npv8rv0.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive';
@@ -841,6 +845,16 @@ function SecureMemoApp() {
     }, duration);
   }, []);
 
+  // 📱 모바일 탭 핸들러들
+  const handleMobileTabChange = useCallback((tabId) => {
+    setMobileActiveTab(tabId);
+    
+    // 메모 탭으로 이동할 때 현재 메모가 없으면 첫 번째 메모 선택
+    if (tabId === 'editor' && !currentMemo && appData.memos.length > 0) {
+      setCurrentMemo(appData.memos[0]);
+    }
+  }, [currentMemo, appData.memos]);
+
   const handleViewModeChange = useCallback((newViewMode) => {
     setViewMode(newViewMode);
     Storage.save('viewMode', newViewMode);
@@ -1367,6 +1381,10 @@ function SecureMemoApp() {
       await saveEncryptedData(updatedData);
       setAppData(updatedData);
       
+      if (currentMemo && currentMemo.id === memoId) {
+        setCurrentMemo(updatedMemo);
+      }
+      
       showToast(updatedMemo.starred ? '즐겨찾기에 추가되었습니다.' : '즐겨찾기에서 제거되었습니다.');
       
     } catch (error) {
@@ -1435,6 +1453,8 @@ function SecureMemoApp() {
         
         await saveEncryptedData(newData);
         setAppData(newData);
+        setCurrentMemo(null);
+        setSelectedNotebook('all');
         
         showToast('데이터가 성공적으로 가져와졌습니다.');
         
@@ -1747,6 +1767,27 @@ function SecureMemoApp() {
     setActiveTab(tabId);
   };
 
+  // 📱 모바일 메모 선택 핸들러
+  const handleMobileMemoSelect = (memo) => {
+    if (memo.hasPrivatePassword) {
+      setPrivateMemoToUnlock(memo);
+      setPrivateMemoUnlockPassword('');
+      setPrivateMemoUnlockError('');
+      setShowPrivateMemoModal(true);
+    } else {
+      setSelectedMemo(memo);
+      setActiveTab('editor'); // 에디터 탭으로 이동
+    }
+  };
+
+  // 📱 모바일 메모 생성 핸들러
+  const handleMobileCreateMemo = async () => {
+    await createMemo();
+    if (newMemoContent.trim()) {
+      setActiveTab('editor'); // 생성 후 에디터로 이동
+    }
+  };
+
   // 검색어나 필터 변경 시 첫 페이지로 이동
   useEffect(() => {
     setCurrentPage(1);
@@ -1824,13 +1865,6 @@ function SecureMemoApp() {
       {/* 토스트 메시지 */}
       <Toast show={toast.show} message={toast.message} type={toast.type} styles={styles} />
       
-      {/* 📱 모바일 최적화 배너 */}
-      {isMobile && (
-        <div className="mobile-banner">
-          📱 모바일 최적화 완료! 터치 친화적인 인터페이스로 이용하세요.
-        </div>
-      )}
-      
       {/* 🔐 로그인하지 않은 경우 */}
       {!accessToken && (
         <div style={styles.securityContainer} className="mobile-security-container">
@@ -1906,8 +1940,236 @@ function SecureMemoApp() {
       )}      
       {/* 🎯 메인 앱 화면 */}
       {accessToken && isPasswordSet && isUnlocked && (
-        <div style={styles.container}>
-          {/* 📱 모바일에서는 기존 데스크톱 레이아웃 사용 (CSS로 모바일 최적화) */}
+        <>
+          {isMobile ? (
+            // 📱 모바일 레이아웃 - 하단 탭 네비게이션
+            <>
+              {/* 현재 활성 탭에 따른 콘텐츠 렌더링 */}
+              {mobileActiveTab === 'editor' && (
+                <div style={{ height: 'calc(100vh - 70px)', backgroundColor: '#ffffff' }}>
+                  {/* 모바일 에디터 헤더 */}
+                  <div style={{
+                    backgroundColor: 'white',
+                    padding: '16px',
+                    borderBottom: '1px solid #e5e7eb',
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 10
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '8px'
+                    }}>
+                      <h1 style={{
+                        fontSize: '18px',
+                        fontWeight: '700',
+                        color: '#1f2937',
+                        margin: 0
+                      }}>
+                        {currentMemo?.title || '새 메모'}
+                      </h1>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            backgroundColor: '#f3f4f6',
+                            color: '#6b7280',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer'
+                          }}
+                          onClick={toggleTheme}
+                          title="테마 변경"
+                        >
+                          {theme === 'light' ? '🌙' : '☀️'}
+                        </button>
+                        <button 
+                          style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            backgroundColor: '#f3f4f6',
+                            color: '#6b7280',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer'
+                          }}
+                          onClick={handleLogout}
+                          title="로그아웃"
+                        >
+                          🚪
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {currentMemo && (
+                      <div style={{
+                        fontSize: '12px',
+                        color: '#6b7280',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <span>
+                          {getNotebookName(currentMemo.notebookId)} • 
+                          {currentMemo.updatedAt ? new Date(currentMemo.updatedAt).toLocaleDateString('ko-KR') : ''}
+                        </span>
+                        <span>{currentMemo.content?.length || 0}자</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 모바일 에디터 콘텐츠 */}
+                  <div style={{ padding: '16px', height: 'calc(100vh - 140px)', overflow: 'auto' }}>
+                    {currentMemo ? (
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="메모 제목"
+                          value={currentMemo.title}
+                          onChange={(e) => updateMemo(currentMemo.id, { title: e.target.value })}
+                          style={{
+                            width: '100%',
+                            fontSize: '18px',
+                            fontWeight: '600',
+                            border: 'none',
+                            outline: 'none',
+                            marginBottom: '16px',
+                            backgroundColor: 'transparent',
+                            color: '#1f2937'
+                          }}
+                        />
+                        <textarea
+                          placeholder="여기에 메모를 작성하세요..."
+                          value={currentMemo.content}
+                          onChange={(e) => updateMemo(currentMemo.id, { content: e.target.value })}
+                          style={{
+                            width: '100%',
+                            minHeight: 'calc(100vh - 200px)',
+                            fontSize: '16px',
+                            lineHeight: '1.6',
+                            border: 'none',
+                            outline: 'none',
+                            resize: 'none',
+                            backgroundColor: 'transparent',
+                            color: '#374151'
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div style={{
+                        textAlign: 'center',
+                        padding: '60px 20px',
+                        color: '#9ca3af'
+                      }}>
+                        <div style={{
+                          fontSize: '48px',
+                          marginBottom: '16px'
+                        }}>📝</div>
+                        <div style={{
+                          fontSize: '16px',
+                          fontWeight: '500',
+                          marginBottom: '8px'
+                        }}>
+                          메모를 선택하거나 새로 만들어 보세요
+                        </div>
+                        <div style={{ fontSize: '14px' }}>
+                          하단의 목록 탭에서 메모를 선택할 수 있습니다
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {mobileActiveTab === 'memos' && (
+                <MobileMemosTab
+                  appData={appData}
+                  selectedNotebook={selectedNotebook}
+                  onMemoSelect={handleMobileMemoSelect}
+                  onMemoCreate={handleMobileMemoCreate}
+                  onMemoDelete={deleteMemo}
+                  onMemoToggleStar={toggleMemoStar}
+                  searchTerm={searchQuery}
+                  onSearchTermChange={setSearchQuery}
+                  sortBy={sortBy}
+                  onSortByChange={setSortBy}
+                  currentMemo={currentMemo}
+                />
+              )}
+
+              {mobileActiveTab === 'notebooks' && (
+                <MobileNotebooksTab
+                  appData={appData}
+                  selectedNotebook={selectedNotebook}
+                  onNotebookSelect={handleMobileNotebookSelect}
+                  onNotebookCreate={createNotebook}
+                  onNotebookUpdate={updateNotebook}
+                  onNotebookDelete={deleteNotebook}
+                />
+              )}
+
+              {mobileActiveTab === 'settings' && (
+                <MobileSettingsTab
+                  user={user}
+                  appData={appData}
+                  onPasswordChange={(oldPw, newPw) => {
+                    // 비밀번호 변경 로직 구현 필요
+                    showToast('비밀번호가 변경되었습니다.');
+                  }}
+                  onDataExport={exportData}
+                  onDataImport={importData}
+                  onClearAllData={() => {
+                    if (window.confirm('모든 데이터를 삭제하시겠습니까?')) {
+                      setAppData({ memos: [], notebooks: getDefaultNotebook() });
+                      setCurrentMemo(null);
+                      showToast('모든 데이터가 삭제되었습니다.');
+                    }
+                  }}
+                  onLogout={handleLogout}
+                  darkMode={theme === 'dark'}
+                  onDarkModeToggle={toggleTheme}
+                  viewMode={viewMode}
+                  onViewModeChange={handleViewModeChange}
+                />
+              )}
+
+              {mobileActiveTab === 'trash' && (
+                <div style={{
+                  height: 'calc(100vh - 70px)',
+                  backgroundColor: '#f8fafc',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexDirection: 'column',
+                  color: '#9ca3af'
+                }}>
+                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>🗑️</div>
+                  <div style={{ fontSize: '16px', fontWeight: '500' }}>휴지통</div>
+                  <div style={{ fontSize: '14px', marginTop: '8px' }}>곧 구현될 예정입니다</div>
+                </div>
+              )}
+
+              {/* 하단 탭 네비게이션 */}
+              <BottomTabs
+                activeTab={mobileActiveTab}
+                onTabChange={handleMobileTabChange}
+                memoCount={appData.memos.length}
+                notebookCount={appData.notebooks.length}
+                trashCount={0}
+              />
+            </>
+          ) : (
+            // 💻 데스크톱 레이아웃 (기존 코드)
+            <>
           {/* 왼쪽 패널 */}
           <div style={styles.leftPanel} className={isMobile ? 'left-panel mobile-scroll' : ''}>
             {/* 헤더 */}
@@ -2596,7 +2858,7 @@ function SecureMemoApp() {
               )}
             </div>
           </div>
-        </div>
+        </>
       )}      
       {/* 휴지통 모달 */}
       {showTrashModal && (
@@ -2720,6 +2982,10 @@ function SecureMemoApp() {
           </div>
         </div>
       )}
+            </>
+          )}
+        </>
+      )}
       
       {/* 개별 비밀번호 메모 잠금 해제 모달 */}
       {showPrivateMemoModal && privateMemoToUnlock && (
@@ -2772,6 +3038,10 @@ function SecureMemoApp() {
             </div>
           </div>
         </div>
+      )}
+            </>
+          )}
+        </>
       )}
     </div>
   );

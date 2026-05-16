@@ -1,135 +1,54 @@
-/* 📱 모바일 최적화 CSS */
+/* 📱 모바일 최적화 CSS - 안전한 반응형 레이아웃 */
 
-/* 기본 반응형 설정 */
+/* 🎯 모바일 반응형 설정 (768px 이하) */
 @media (max-width: 768px) {
+  
+  /* 메인 컨테이너 모바일 최적화 */
   .main-container {
     flex-direction: column !important;
     height: 100vh !important;
+    padding: 0 !important;
   }
   
+  /* 좌측 패널 모바일 최적화 */
   .left-panel {
     width: 100% !important;
-    height: 40vh !important;
-    max-height: 40vh !important;
+    height: 50vh !important;
+    max-height: 50vh !important;
     border-right: none !important;
     border-bottom: 1px solid #dee2e6 !important;
     overflow-y: auto !important;
   }
   
+  /* 우측 패널 모바일 최적화 */
   .right-panel {
-    height: 60vh !important;
-    padding: 12px !important;
+    width: 100% !important;
+    height: 50vh !important;
+    max-height: 50vh !important;
     overflow-y: auto !important;
   }
   
-  /* 헤더 최적화 */
+  /* 헤더 모바일 최적화 */
   .app-header {
-    padding: 12px 16px !important;
-    flex-wrap: wrap !important;
-    gap: 8px !important;
+    padding: 12px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
   }
   
   .profile-section {
-    gap: 8px !important;
-    font-size: 14px !important;
+    margin-bottom: 12px !important;
   }
   
-  .profile-image {
-    width: 28px !important;
-    height: 28px !important;
-  }
-  
-  /* 섹션 최적화 */
-  .section {
-    padding: 8px 12px !important;
-  }
-  
-  .section-title {
-    font-size: 16px !important;
-  }
-  
-  /* 입력 필드 최적화 */
-  .mobile-input {
-    padding: 14px 12px !important;
-    font-size: 16px !important; /* iOS 줌 방지 */
-    min-height: 44px !important; /* 터치 친화적 */
-  }
-  
-  /* 버튼 최적화 */
-  .mobile-button {
-    padding: 16px !important;
-    font-size: 16px !important;
-    min-height: 48px !important; /* 터치 친화적 */
-  }
-  
-  .mobile-icon-button {
-    padding: 12px !important;
-    min-width: 44px !important;
+  /* 버튼들 모바일 크기 조정 */
+  button {
     min-height: 44px !important;
-  }
-  
-  /* 리스트 최적화 */
-  .mobile-list-item {
-    padding: 16px 12px !important;
-    gap: 8px !important;
-    min-height: 56px !important; /* 터치 친화적 */
-  }
-  
-  /* 에디터 최적화 */
-  .mobile-editor {
-    padding: 16px !important;
-    font-size: 16px !important;
-    font-family: system-ui, -apple-system, sans-serif !important;
-  }
-  
-  /* 모달 최적화 */
-  .mobile-modal {
-    padding: 12px !important;
-  }
-  
-  .mobile-modal-content {
-    padding: 20px 16px !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-    max-height: 90vh !important;
-  }
-  
-  /* 보안 컨테이너 최적화 */
-  .mobile-security-container {
-    padding: 12px !important;
-  }
-  
-  .mobile-security-card {
-    padding: 24px 20px !important;
-    max-width: 100% !important;
-    max-height: 90vh !important;
-    overflow-y: auto !important;
-  }
-  
-  .mobile-security-icon {
-    font-size: 36px !important;
-  }
-  
-  /* 비밀번호 입력 최적화 */
-  .mobile-password-input {
-    padding: 16px 12px !important;
-    font-size: 16px !important;
-    min-height: 48px !important;
-  }
-  
-  /* 토스트 최적화 */
-  .mobile-toast {
-    bottom: 12px !important;
     padding: 12px 16px !important;
-    min-width: 280px !important;
-    font-size: 14px !important;
+    font-size: 16px !important;
   }
   
-  /* 탭 최적화 */
-  .notebook-tabs-container-right {
-    flex-wrap: wrap !important;
-    max-height: 120px !important;
-    overflow-y: auto !important;
+  /* 탭 메뉴 모바일 최적화 */
+  .notebook-tabs-container {
+    padding: 8px !important;
   }
   
   .tab-button {
@@ -138,109 +57,134 @@
     min-height: 44px !important;
   }
   
-  /* 페이지네이션 최적화 */
-  .pagination-container {
-    padding: 8px !important;
-    flex-wrap: wrap !important;
-    gap: 4px !important;
-  }
-  
-  .pagination-button {
-    padding: 8px 12px !important;
-    font-size: 14px !important;
-    min-width: 40px !important;
-    min-height: 40px !important;
-  }
-  
-  /* 스크롤바 숨기기 (모바일) */
-  .mobile-scroll::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .mobile-scroll {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-}
-
-/* 🎯 터치 친화적 개선 */
-@media (max-width: 768px) and (pointer: coarse) {
-  /* 모든 클릭 가능한 요소를 더 크게 */
-  button, .clickable {
+  /* 검색 입력 필드 모바일 최적화 */
+  input[type="text"], 
+  input[type="search"], 
+  textarea {
+    font-size: 16px !important;
+    padding: 12px !important;
     min-height: 44px !important;
+  }
+  
+  /* 메모 목록 모바일 최적화 */
+  .memo-item {
+    padding: 16px !important;
+    margin-bottom: 8px !important;
+  }
+  
+  /* 모달 모바일 최적화 */
+  .modal {
+    padding: 16px !important;
+  }
+  
+  .modal-content {
+    width: 95% !important;
+    max-width: none !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+  
+  /* 토스트 메시지 모바일 위치 조정 */
+  .toast {
+    bottom: 20px !important;
+    left: 16px !important;
+    right: 16px !important;
+    width: auto !important;
+  }
+  
+  /* 로그인 화면 모바일 최적화 */
+  .login-container {
+    padding: 20px !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+  
+  /* 스크롤 개선 */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* 터치 친화적인 요소 크기 */
+  .icon-button {
     min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 12px !important;
   }
   
-  /* 텍스트 선택 개선 */
-  .mobile-editor, .mobile-input {
-    -webkit-user-select: text;
-    user-select: text;
+  /* 폰트 크기 조정 */
+  h1 { font-size: 24px !important; }
+  h2 { font-size: 20px !important; }
+  h3 { font-size: 18px !important; }
+  h4 { font-size: 16px !important; }
+  
+  /* 간격 조정 */
+  .content-spacing {
+    padding: 16px !important;
+    margin: 8px 0 !important;
   }
   
-  /* 터치 하이라이트 제거 */
-  * {
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+  /* 모바일 전용 유틸리티 클래스 */
+  .mobile-hidden {
+    display: none !important;
   }
   
-  /* 입력 필드에서는 선택 가능 */
-  input, textarea {
-    -webkit-user-select: text !important;
-    -khtml-user-select: text !important;
-    -moz-user-select: text !important;
-    -ms-user-select: text !important;
-    user-select: text !important;
+  .mobile-full-width {
+    width: 100% !important;
+  }
+  
+  .mobile-text-center {
+    text-align: center !important;
+  }
+  
+  /* 상단 알림 배너 */
+  .mobile-banner {
+    background-color: #3b82f6;
+    color: white;
+    padding: 8px 16px;
+    text-align: center;
+    font-size: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
   }
 }
 
 /* 🌙 다크모드 모바일 최적화 */
 @media (max-width: 768px) and (prefers-color-scheme: dark) {
-  .mobile-input, .mobile-password-input {
-    background-color: #1e1e1e !important;
-    color: #e9ecef !important;
-    border-color: #495057 !important;
+  .main-container {
+    background-color: #1f2937 !important;
   }
   
-  .mobile-button {
-    background-color: #0d6efd !important;
-    color: white !important;
-  }
-}
-
-/* 📱 iPhone/Android 특정 최적화 */
-@supports (-webkit-touch-callout: none) {
-  /* iOS Safari 최적화 */
-  .mobile-input {
-    border-radius: 12px !important;
-  }
-  
-  .mobile-button {
-    border-radius: 12px !important;
-  }
-}
-
-/* 🔄 가로/세로 모드 대응 */
-@media (max-width: 768px) and (orientation: landscape) {
-  .left-panel {
-    height: 50vh !important;
-  }
-  
+  .left-panel,
   .right-panel {
-    height: 50vh !important;
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+    color: #f9fafb !important;
+  }
+  
+  .mobile-banner {
+    background-color: #1e40af !important;
   }
 }
 
-@media (max-width: 768px) and (orientation: portrait) {
-  .left-panel {
-    height: 40vh !important;
+/* 📱 아주 작은 화면 (480px 이하) 추가 최적화 */
+@media (max-width: 480px) {
+  .left-panel,
+  .right-panel {
+    height: 45vh !important;
   }
   
-  .right-panel {
-    height: 60vh !important;
+  .app-header {
+    padding: 8px !important;
+  }
+  
+  button {
+    font-size: 14px !important;
+    padding: 10px 12px !important;
+  }
+  
+  .modal-content {
+    width: 98% !important;
+    padding: 16px !important;
   }
 }
